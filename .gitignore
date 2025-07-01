@@ -39,3 +39,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+service_key.json
+
+# service keys and credentials
+serviceAccountKey.json
+service-account-key.json
+firebase-service-account.json
+google-service-account.json
+*-service-account*.json
+serviceKey.json
+service-key.json
