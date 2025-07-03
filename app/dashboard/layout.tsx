@@ -6,7 +6,7 @@ function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     <ClerkLoaded>
       <div>
-        <DashboardHeader />
+        <DashboardHeader  />
 
         <main>{children}</main>
       </div>

@@ -1,347 +1,398 @@
-pcsk_jHQwo_8kgvXkStvBk6pNgToZKr3vfP3NHvqQxrUUMP3Z6xobqTe1MQDRoen43MqWpDAfo
 
-// "use client"
+// // gsutil cors set cors.json gs://saascribe-1efb0.firebasestorage.app
+// // "use client"
 
-// import React, { useCallback, useState } from 'react'
-// import { useDropzone, FileRejection } from 'react-dropzone'
-// import { toast } from 'sonner'
 
-// interface FileUploaderProps {
-//   onFileUpload?: (files: File[]) => void;
-//   maxFiles?: number;
-//   acceptedFileTypes?: string[];
-// }
 
-// interface UploadedFile {
-//   file: File;
-//   id: string;
-//   status: 'uploading' | 'success' | 'error';
-//   progress?: number;
-//   error?: string;
-//   fileId?: string;
-// }
 
-// const FileUploader: React.FC<FileUploaderProps> = ({ 
-//   onFileUpload, 
-//   maxFiles = 1, 
-//   acceptedFileTypes = ['.pdf'] 
-// }) => {
-//   // State management for uploaded files, drag state, and upload status
-//   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
-//   const [isDragActive, setIsDragActive] = useState(false);
-//   const [isUploading, setIsUploading] = useState(false);
 
-//   // Function to handle actual file upload to server
-//   const uploadFile = async (file: File): Promise<{ success: boolean; error?: string; fileId?: string }> => {
-//     try {
-//       // Create FormData object to send file and metadata to server
-//       const formData = new FormData();
-//       formData.append('file', file);
-//       formData.append('fileName', file.name);
-//       formData.append('fileSize', file.size.toString());
-//       formData.append('fileType', file.type);
 
-//       // Send POST request to upload API endpoint
-//       const response = await fetch('/api/upload', {
-//         method: 'POST',
-//         body: formData,
-//       });
 
-//       // Check if upload was successful
-//       if (!response.ok) {
-//         throw new Error(`Upload failed: ${response.statusText}`);
-//       }
+// "use client";
 
-//       // Parse response and return success with file ID
-//       const result = await response.json();
-//       return { success: true, fileId: result.fileId };
-//     } catch (error) {
-//       console.error('Upload error:', error);
-//       return { success: false, error: error instanceof Error ? error.message : 'Upload failed' };
-//     }
-//   };
+// import "react-pdf/dist/Page/AnnotationLayer.css";
+// import "react-pdf/dist/Page/TextLayer.css";
 
-//   // Main drop handler - triggered when files are dropped or selected
-//   const onDrop = useCallback(async (acceptedFiles: File[], rejectedFiles: FileRejection[]) => {
-//     // Set uploading state to true to disable dropzone
-//     setIsUploading(true);
-    
-//     // Handle rejected files - show error toast for each rejected file
-//     if (rejectedFiles.length > 0) {
-//       console.log('Rejected files:', rejectedFiles);
-//       rejectedFiles.forEach((rejectedFile) => {
-//         toast.error(`File rejected: ${rejectedFile.file.name}`, {
-//           description: rejectedFile.errors.map(e => e.message).join(', '),
-//           style: {
-//             background: 'linear-gradient(135deg, #ff6b6b, #ff8e8e)',
-//             color: 'white',
-//             border: '1px solid rgba(255, 255, 255, 0.2)',
-//           },
-//         });
-//       });
-//     }
+// import { Document, Page, pdfjs } from "react-pdf";
+// import { useState, useEffect } from "react";
+// import { Button } from "./ui/button";
+// import {
+//   FiDownload,
+//   FiTrash2,
+//   FiShare2,
+//   FiEdit,
+//   FiChevronLeft,
+//   FiChevronRight,
+//   FiZoomIn,
+//   FiZoomOut,
+//   FiFileText,
+// } from "react-icons/fi";
 
-//     // Show upload started toast if there are accepted files
-//     if (acceptedFiles.length > 0) {
-//       toast.info(`Starting upload of ${acceptedFiles.length} file${acceptedFiles.length > 1 ? 's' : ''}`, {
-//         description: 'Please wait while we process your files...',
-//         style: {
-//           background: 'linear-gradient(135deg, #00f2fe, #4facfe)',
-//           color: 'white',
-//           border: '1px solid rgba(255, 255, 255, 0.2)',
-//         },
-//       });
-//     }
+// // Correct worker config
+// // pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+// pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
 
-//     // Create UploadedFile objects for each accepted file with unique IDs
-//     const newUploadedFiles: UploadedFile[] = acceptedFiles.map(file => ({
-//       file,
-//       id: Math.random().toString(36).substr(2, 9), // Generate unique ID
-//       status: 'uploading' as const,
-//       progress: 0
-//     }));
+// function PdfView({ url }: { url: string }) {
+//   const [error, setError] = useState<string | null>(null);
+//   const [isLoading, setIsLoading] = useState(true);
+//   const [numPages, setNumPages] = useState<number>();
+//   const [pageNumber, setPageNumber] = useState<number>(1);
+//   const [file, setFile] = useState<Blob | null>(null);
+//   const [scale, setScale] = useState<number>(1);
 
-//     // Add new files to the uploaded files list
-//     setUploadedFiles(prev => [...prev, ...newUploadedFiles]);
-
-//     // Process each file upload individually
-//     for (const uploadedFile of newUploadedFiles) {
+//   useEffect(() => {
+//     const fetchFile = async () => {
 //       try {
-//         // Attempt to upload the file
-//         const result = await uploadFile(uploadedFile.file);
-        
-//         // Update the file status based on upload result
-//         setUploadedFiles(prev => prev.map(f => 
-//           f.id === uploadedFile.id 
-//             ? { 
-//                 ...f, 
-//                 status: result.success ? 'success' : 'error',
-//                 error: result.error
-//               }
-//             : f
-//         ));
-
-//         // Show success toast if upload was successful
-//         if (result.success) {
-//           console.log(`File ${uploadedFile.file.name} uploaded successfully`);
-//           toast.success(`File uploaded successfully!`, {
-//             description: `${uploadedFile.file.name} (${(uploadedFile.file.size / 1024 / 1024).toFixed(2)} MB)`,
-//             style: {
-//               background: 'linear-gradient(135deg, #10b981, #34d399)',
-//               color: 'white',
-//               border: '1px solid rgba(255, 255, 255, 0.2)',
-//             },
-//           });
-//         } else {
-//           // Show error toast if upload failed
-//           toast.error(`Upload failed: ${uploadedFile.file.name}`, {
-//             description: result.error || 'Unknown error occurred',
-//             style: {
-//               background: 'linear-gradient(135deg, #ff6b6b, #ff8e8e)',
-//               color: 'white',
-//               border: '1px solid rgba(255, 255, 255, 0.2)',
-//             },
-//           });
-//         }
-//       } catch (error) {
-//         // Handle any unexpected errors during upload
-//         setUploadedFiles(prev => prev.map(f => 
-//           f.id === uploadedFile.id 
-//             ? { 
-//                 ...f, 
-//                 status: 'error',
-//                 error: error instanceof Error ? error.message : 'Upload failed'
-//               }
-//             : f
-//         ));
-        
-//         // Show error toast for unexpected errors
-//         toast.error(`Upload failed: ${uploadedFile.file.name}`, {
-//           description: error instanceof Error ? error.message : 'Unknown error occurred',
-//           style: {
-//             background: 'linear-gradient(135deg, #ff6b6b, #ff8e8e)',
-//             color: 'white',
-//             border: '1px solid rgba(255, 255, 255, 0.2)',
-//           },
-//         });
+//         const response = await fetch(url);
+//         const blob = await response.blob();
+//         setFile(blob);
+//       } catch (err) {
+//         setError("Failed to load PDF.");
 //       }
-//     }
+//     };
+//     fetchFile();
+//   }, [url]);
 
-//     // Set uploading state to false to re-enable dropzone
-//     setIsUploading(false);
-    
-//     // Call the parent callback with successfully uploaded files
-//     const successfulFiles = newUploadedFiles
-//       .filter(f => f.status === 'success')
-//       .map(f => f.file);
-    
-//     if (onFileUpload && successfulFiles.length > 0) {
-//       onFileUpload(successfulFiles);
-//     }
-//   }, [onFileUpload]);
-
-//   // Configure dropzone with callbacks and options
-//   const { getRootProps, getInputProps, isDragReject } = useDropzone({
-//     onDrop,
-//     maxFiles,
-//     accept: {
-//       'application/pdf': acceptedFileTypes
-//     },
-//     onDragEnter: () => setIsDragActive(true), // Set drag active when files enter dropzone
-//     onDragLeave: () => setIsDragActive(false), // Set drag inactive when files leave dropzone
-//     disabled: isUploading, // Disable dropzone during upload
-//   });
-
-//   // Function to remove a file from the uploaded files list
-//   const removeFile = (id: string) => {
-//     // Find the file to be removed for toast notification
-//     const fileToRemove = uploadedFiles.find(f => f.id === id);
-//     if (fileToRemove) {
-//       // Show info toast when file is removed
-//       toast.info(`File removed: ${fileToRemove.file.name}`, {
-//         style: {
-//           background: 'linear-gradient(135deg, #a18cd1, #fbc2eb)',
-//           color: 'white',
-//           border: '1px solid rgba(255, 255, 255, 0.2)',
-//         },
-//       });
-//     }
-//     // Remove file from state
-//     setUploadedFiles(prev => prev.filter(f => f.id !== id));
-//   };
-
-//   // Function to get appropriate status icon based on upload status
-//   const getStatusIcon = (status: UploadedFile['status']) => {
-//     switch (status) {
-//       case 'uploading':
-//         return <span className="animate-spin">⏳</span>; // Spinning hourglass for uploading
-//       case 'success':
-//         return <span className="text-green-500">✅</span>; // Green checkmark for success
-//       case 'error':
-//         return <span className="text-red-500">❌</span>; // Red X for error
-//       default:
-//         return <span>📄</span>; // Default file icon
-//     }
-//   };
-
-//   // Function to get human-readable status text
-//   const getStatusText = (status: UploadedFile['status']) => {
-//     switch (status) {
-//       case 'uploading':
-//         return 'Uploading...';
-//       case 'success':
-//         return 'Uploaded successfully';
-//       case 'error':
-//         return 'Upload failed';
-//       default:
-//         return '';
-//     }
+//   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }): void => {
+//     setNumPages(numPages);
 //   };
 
 //   return (
-//     <div className="w-full space-y-4 sm:space-y-6">
-//       {/* Dropzone area - handles drag and drop functionality */}
-//       <div
-//         {...getRootProps()}
-//         className={`
-//           group relative border-2 border-dashed rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 text-center cursor-pointer transition-all duration-300
-//           ${isUploading ? 'opacity-50 cursor-not-allowed' : ''} // Disable visual feedback during upload
-//           ${isDragActive 
-//             ? 'border-[#00f2fe] bg-gradient-to-br from-[#00f2fe]/10 to-[#4facfe]/10' // Active drag state
-//             : isDragReject 
-//             ? 'border-red-400 bg-red-50' // Rejected file state
-//             : 'border-gray-300 hover:border-[#00f2fe] hover:bg-gradient-to-br hover:from-[#00f2fe]/5 hover:to-[#4facfe]/5' // Default state
-//           }
-//         `}
-//       >
-//         <input {...getInputProps()} />
-        
-//         {/* Dropzone content - icon and text */}
-//         <div className="flex flex-col items-center justify-center space-y-3 sm:space-y-4">
-//           {/* File icon with gradient background */}
-//           <div className={`
-//             flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl text-xl sm:text-2xl transition-all duration-300
-//             ${isDragActive 
-//               ? 'bg-gradient-to-br from-[#00f2fe] to-[#4facfe] text-white' // Active state
-//               : 'bg-gradient-to-br from-[#00f2fe]/20 to-[#4facfe]/20 text-[#00f2fe]' // Default state
-//             }
-//           `}>
-//             <span className={isUploading ? 'animate-pulse' : ''}>📄</span>
+//     <div className="flex flex-col w-full h-full bg-white/95 backdrop-blur-sm border-r border-white/20 shadow-lg overflow-hidden">
+//       {isLoading && (
+//         <div className="flex items-center justify-center min-h-[60vh]">
+//           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#00f2fe]"></div>
+//         </div>
+//       )}
+//       {error && (
+//         <div className="flex items-center justify-center min-h-[60vh]">
+//           <div className="text-center">
+//             <div className="text-red-500 text-lg mb-2">Error loading PDF</div>
+//             <div className="text-gray-600 text-sm">{error}</div>
 //           </div>
-          
-//           {/* Dropzone text content */}
-//           <div className="space-y-1 sm:space-y-2">
-//             {/* Main heading - changes based on state */}
-//             <h3 className={`
-//               text-lg sm:text-xl lg:text-2xl font-bold transition-all duration-300
-//               ${isDragActive 
-//                 ? 'text-[#00f2fe]' 
-//                 : 'text-gray-800 group-hover:text-[#00f2fe]'
-//               }
-//             `}>
-//               {isUploading 
-//                 ? 'Uploading files...' 
-//                 : isDragActive 
-//                 ? 'Drop your PDF here' 
-//                 : 'Drag & drop your PDF here'
-//               }
-//             </h3>
-//             {/* Subtitle text */}
-//             <p className="text-sm sm:text-base text-gray-600">
-//               {!isUploading && (
-//                 <>or <span className="text-[#00f2fe] font-semibold">click to browse</span></>
-//               )}
-//             </p>
-//             {/* File size limit info */}
-//             <p className="text-xs sm:text-sm text-gray-500">
-//               Supports PDF files up to 10MB
-//             </p>
+//         </div>
+//       )}
+//       {!isLoading && !error && file && numPages && (
+//         <>
+//           {/* PDF Toolbar */}
+//           <div className="bg-white/95 p-1.5 sm:p-2 border-b border-gray-200/50 flex flex-wrap items-center justify-between gap-2">
+//             <div className="flex items-center space-x-2 max-w-[60%] sm:max-w-[70%]">
+//               <h3 className="font-semibold text-gray-800 truncate text-sm sm:text-base">
+//                 filename  here
+//               </h3>
+//               <Button
+//                 variant="ghost"
+//                 size="sm"
+//                 className="text-gray-500 hover:bg-gray-100/50 p-1.5"
+//               >
+//                 <FiEdit className="w-4 h-4" />
+//               </Button>
+//             </div>
+//             {/* zoom in & out */}
+//             <div className="flex items-center space-x-1.5 sm:space-x-2">
+//               <Button
+//                 disabled={pageNumber === 1}
+//                 onClick={() => {
+//                   setPageNumber(pageNumber - 1);
+//                 }}
+//                 variant="outline"
+//                 size="sm"
+//                 className="text-gray-700 border-gray-200 hover:bg-gray-50 h-8 w-8 p-0 sm:h-9 sm:w-auto sm:px-3"
+//               >
+//                 <FiChevronLeft className="w-4 h-4 sm:mr-1" />
+//                 <span className="hidden sm:inline">Prev</span>
+//               </Button>
+//               <span className="text-xs sm:text-sm text-gray-500 px-1">
+//                 {pageNumber} of {numPages}
+//               </span>
+//               <Button
+//                 disabled={pageNumber === numPages}
+//                 onClick={() => {
+//                   if (numPages) {
+//                     if (pageNumber < numPages) {
+//                       setPageNumber(pageNumber + 1);
+//                     }
+//                   }
+//                 }}
+//                 variant="outline"
+//                 size="sm"
+//                 className="text-gray-700 border-gray-200 hover:bg-gray-50 h-8 w-8 p-0 sm:h-9 sm:w-auto sm:px-3"
+//               >
+//                 <span className="hidden sm:inline">Next</span>
+//                 <FiChevronRight className="w-4 h-4 sm:ml-1" />
+//               </Button>
+//               <div className="h-6 w-px bg-gray-300 mx-1"></div>
+//               <Button
+//                 variant="outline"
+//                 size="sm"
+//                 onClick={() => {
+//                   setScale(scale - 0.1);
+//                 }}
+//                 className="text-gray-700 border-gray-200 hover:bg-gray-50 h-8 w-8 p-0 sm:h-9 sm:w-auto sm:px-3"
+//               >
+//                 <FiZoomOut className="w-4 h-4" />
+//               </Button>
+//               <Button
+//                 variant="outline"
+//                 size="sm"
+//                 onClick={() => {
+//                   setScale(scale + 0.1);
+//                 }}
+//                 className="text-gray-700 border-gray-200 hover:bg-gray-50 h-8 w-8 p-0 sm:h-9 sm:w-auto sm:px-3"
+//               >
+//                 <FiZoomIn className="w-4 h-4" />
+//               </Button>
+//             </div>
 //           </div>
+
+//           {/* PDF Viewer */}
+//           <div className="flex-1 overflow-auto relative">
+//             <Document
+//               file={file}
+//               onLoadSuccess={onDocumentLoadSuccess}
+//               loading={
+//                 <div className="flex items-center justify-center min-h-[60vh]">
+//                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#00f2fe]"></div>
+//                 </div>
+//               }
+//               onLoadError={(error: Error) => {
+//                 console.error("PDF loading error:", error);
+//                 setError("Failed to load PDF. Please try again.");
+//               }}
+//             >
+//               <Page
+//                 pageNumber={pageNumber}
+//                 scale={scale}
+//                 renderMode="canvas"
+//                 loading={
+//                   <div className="flex items-center justify-center min-h-[60vh]">
+//                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#00f2fe]"></div>
+//                   </div>
+//                 }
+//               />
+//             </Document>
+//           </div>
+//         </>
+//       )}
+//       {/* PDF Toolbar */}
+//       <div className="bg-white/95 p-1.5 sm:p-2 border-b border-gray-200/50 flex flex-wrap items-center justify-between gap-2">
+//         <div className="flex items-center space-x-2 max-w-[60%] sm:max-w-[70%]">
+//           <h3 className="font-semibold text-gray-800 truncate text-sm sm:text-base">
+//             {/* {fileName} */}filename
+//           </h3>
+//           <Button
+//             variant="ghost"
+//             size="sm"
+//             className="text-gray-500 hover:bg-gray-100/50 p-1.5"
+//           >
+//             <FiEdit className="w-4 h-4" />
+//           </Button>
+//         </div>
+//         {/* zoom in & out */}
+//         <div className="flex items-center space-x-1.5 sm:space-x-2">
+//           <Button
+//             disabled={pageNumber === 1}
+//             onClick={() => {
+//               setPageNumber(pageNumber - 1);
+//             }}
+//             variant="outline"
+//             size="sm"
+//             className="text-gray-700 border-gray-200 hover:bg-gray-50 h-8 w-8 p-0 sm:h-9 sm:w-auto sm:px-3"
+//           >
+//             <FiChevronLeft className="w-4 h-4 sm:mr-1" />
+//             <span className="hidden sm:inline">Prev</span>
+//           </Button>
+//           <span className="text-xs sm:text-sm text-gray-500 px-1">
+//             {pageNumber} of {numPages}
+//           </span>
+//           <Button
+//             disabled={pageNumber === numPages}
+//             onClick={() => {
+//               if (numPages) {
+//                 if (pageNumber < numPages) {
+//                   setPageNumber(pageNumber + 1);
+//                 }
+//               }
+//             }}
+//             variant="outline"
+//             size="sm"
+//             className="text-gray-700 border-gray-200 hover:bg-gray-50 h-8 w-8 p-0 sm:h-9 sm:w-auto sm:px-3"
+//           >
+//             <span className="hidden sm:inline">Next</span>
+//             <FiChevronRight className="w-4 h-4 sm:ml-1" />
+//           </Button>
+//           <div className="h-6 w-px bg-gray-300 mx-1"></div>
+//           <Button
+//             onClick={() => setScale((prev) => Math.min(prev + 0.25, 3))}
+//             variant="outline"
+//             size="sm"
+//             className="text-gray-700 border-gray-200 hover:bg-gray-50 h-8 w-8 p-0"
+//           >
+//             <FiZoomIn className="w-4 h-4" />
+//           </Button>
+//           <Button
+//             onClick={() => setScale((prev) => Math.max(prev - 0.25, 0.5))}
+//             variant="outline"
+//             size="sm"
+//             className="text-gray-700 border-gray-200 hover:bg-gray-50 h-8 w-8 p-0"
+//           >
+//             <FiZoomOut className="w-4 h-4" />
+//           </Button>
 //         </div>
 //       </div>
 
-//       {/* Uploaded files list - shows all uploaded files with status */}
-//       {uploadedFiles.length > 0 && (
-//         <div className="space-y-2 sm:space-y-3">
-//           <h4 className="text-base sm:text-lg font-semibold text-gray-800">Uploaded Files:</h4>
-//           {uploadedFiles.map((uploadedFile) => (
-//             <div 
-//               key={uploadedFile.id}
-//               className="flex items-center justify-between p-3 sm:p-4 rounded-lg sm:rounded-xl bg-white/80 backdrop-blur-sm border border-white/20 shadow-lg"
-//             >
-//               {/* File info section */}
-//               <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
-//                 {/* Status icon */}
-//                 <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-[#00f2fe] to-[#4facfe] rounded-lg text-white text-sm sm:text-base flex-shrink-0">
-//                   {getStatusIcon(uploadedFile.status)}
-//                 </div>
-//                 {/* File details */}
-//                 <div className="min-w-0 flex-1">
-//                   <p className="font-medium text-gray-800 text-sm sm:text-base truncate">
-//                     {uploadedFile.file.name}
-//                   </p>
-//                   <p className="text-xs sm:text-sm text-gray-500">
-//                     {(uploadedFile.file.size / 1024 / 1024).toFixed(2)} MB • {getStatusText(uploadedFile.status)}
-//                   </p>
-//                   {/* Error message if upload failed */}
-//                   {uploadedFile.error && (
-//                     <p className="text-xs text-red-500 mt-1">{uploadedFile.error}</p>
-//                   )}
-//                 </div>
+//       {/* PDF Container */}
+//       <div className="w-full max-h-[calc(100vh-200px)] sm:max-h-[calc(100vh-220px)] bg-gradient-to-br from-white via-[#f8fafc] to-[#e0f2fe] border border-gray-200/50 rounded-lg shadow-inner overflow-hidden">
+//         <div className="w-full h-full overflow-auto p-2 custom-scrollbar ">
+//           {!file ? (
+//             <div className="text-center p-4 flex flex-col items-center justify-center h-full">
+//               <div className="w-16 h-16 bg-gradient-to-r from-[#00f2fe] to-[#4facfe] rounded-full flex items-center justify-center mb-4">
+//                 <FiFileText className="w-8 h-8 text-white" />
 //               </div>
-//               {/* Remove button */}
-//               <button
-//                 onClick={() => removeFile(uploadedFile.id)}
-//                 className="p-1 sm:p-2 text-gray-400 hover:text-red-500 transition-colors duration-200 flex-shrink-0 ml-2"
-//               >
-//                 <span className="text-lg sm:text-xl">✕</span>
-//               </button>
+//               <p className="text-gray-500 font-medium">
+//                 {/* {fileName} */}  filename
+//                 </p>
+//               <p className="text-sm text-gray-400 mt-2">
+//                 PDF preview will be shown here
+//               </p>
 //             </div>
-//           ))}
+//           ) : (
+//             <Document
+//               file={file}
+//               onLoadSuccess={onDocumentLoadSuccess}
+//               loading={null}
+//             >
+//               <Page
+//                 pageNumber={pageNumber}
+//                 scale={scale}
+//                 renderAnnotationLayer={false}
+//                 renderTextLayer={false}
+//               />
+//             </Document>
+//           )}
 //         </div>
-//       )}
+//       </div>
+
+//       {/* File Info & Actions */}
+//       <div className="bg-white/95 border-t border-gray-200/50 p-1.5 sm:p-2">
+//         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+//           <div className="text-xs sm:text-sm text-gray-600 truncate">
+//             <p>
+//               {/* {fileSize} • {fileType} */}
+//               fileSize , fileType
+//             </p>
+//           </div>
+//           <div className="flex items-center space-x-1.5 sm:space-x-2">
+//             <Button
+//               variant="outline"
+//               size="sm"
+//               className="text-gray-700 border-gray-200 hover:bg-gray-50 h-8 px-2 sm:px-3 text-xs sm:text-sm"
+//             >
+//               <FiDownload className="w-3.5 h-3.5 sm:mr-1" />
+//               <span className="hidden sm:inline">Download</span>
+//             </Button>
+//             <Button
+//               variant="outline"
+//               size="sm"
+//               className="text-gray-700 border-gray-200 hover:bg-gray-50 h-8 px-2 sm:px-3 text-xs sm:text-sm"
+//             >
+//               <FiShare2 className="w-3.5 h-3.5 sm:mr-1" />
+//               <span className="hidden sm:inline">Share</span>
+//             </Button>
+//             <Button
+//               variant="outline"
+//               size="sm"
+//               className="text-red-600 border-red-200 hover:bg-red-50 h-8 px-2 sm:px-3 text-xs sm:text-sm"
+//             >
+//               <FiTrash2 className="w-3.5 h-3.5 sm:mr-1" />
+//               <span className="hidden sm:inline">Delete</span>
+//             </Button>
+//           </div>
+//         </div>
+//       </div>
 //     </div>
-//   )
+//   );
 // }
 
-// export default FileUploader
+// {
+//   /* {error && <p className="text-red-500">{error}</p>}
+//       {!file ? (
+//         <h1>Loading PDF...</h1>
+//       ) : (
+//         <Document loading={null} file={file} onLoadSuccess={onDocumentLoadSuccess}>
+//           <Page scale={scale} pageNumber={pageNumber} />
+//         </Document>
+//       )} */
+// }
+
+// export default PdfView;
+// -----------------
+
+
+// "use client";
+
+// import "react-pdf/dist/Page/AnnotationLayer.css";
+// import "react-pdf/dist/Page/TextLayer.css";
+
+// import { Document, Page, pdfjs } from "react-pdf";
+// import { useState, useEffect } from "react";
+// import { Button } from "./ui/button";
+// import {
+//   FiDownload,
+//   FiTrash2,
+//   FiShare2,
+//   FiEdit,
+//   FiChevronLeft,
+//   FiChevronRight,
+//   FiZoomIn,
+//   FiZoomOut,
+//   FiFileText,
+// } from "react-icons/fi";
+
+// // Correct worker config
+// // pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+// pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+
+// function PdfView({ url }: { url: string }) {
+//   const [error, setError] = useState<string | null>(null);
+//   const [isLoading, setIsLoading] = useState(true);
+//   const [numPages, setNumPages] = useState<number>();
+//   const [pageNumber, setPageNumber] = useState<number>(1);
+//   const [file, setFile] = useState<Blob | null>(null);
+//   const [scale, setScale] = useState<number>(1);
+
+//   useEffect(() => {
+//     const fetchFile = async () => {
+//       try {
+//         const response = await fetch(url);
+//         const blob = await response.blob();
+//         setFile(blob);
+//       } catch (err) {
+//         setError("Failed to load PDF.");
+//       }
+//     };
+//     fetchFile();
+//   }, [url]);
+
+//   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }): void => {
+//     setNumPages(numPages);
+//   };
+
+//   return (
+//     <div>
+
+
+
+//       {error && <p className="text-red-500">{error}</p>}
+//       {!file ? (
+//         <h1>Loading PDF...</h1>
+//       ) : (
+//         <Document loading={null} file={file} onLoadSuccess={onDocumentLoadSuccess}>
+//           <Page scale={scale} pageNumber={pageNumber} />
+//         </Document>
+//       )}
+//     </div>
+//   );
+// }
+
+// export default PdfView;

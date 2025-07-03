@@ -9,8 +9,9 @@ export default async function ChatToFilePage({
 }: {
   params: { id: string };
 }) {
-  const awaitedParams = await params;
-  const { id: docId } = awaitedParams;
+  // const awaitedParams = await params;
+  // const { id: docId } = awaitedParams;
+  const { id: docId } = await params;
 
   const { userId } = await auth();
 

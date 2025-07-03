@@ -3,7 +3,7 @@ import React from "react";
 
 const UploadPage = () => {
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-white via-[#f8fafc] to-[#e0f2fe]">
+    <div className="min-h-screen pt-20 w-full bg-gradient-to-br from-white via-[#f8fafc] to-[#e0f2fe]">
       <div className="container max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 md:py-12">
         {/* Header Section */}
         <div className="text-center mb-8 sm:mb-12">

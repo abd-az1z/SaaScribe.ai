@@ -4,6 +4,7 @@ import DashboardHeader from "@/components/DashboardHeader";
 import PricingSection from "@/components/PricingSection";
 import { FiCheckCircle, FiShield, FiTrendingUp, FiUsers, FiCode, FiSettings, FiFileText } from "react-icons/fi";
 import {Button} from "@/components/ui/button";
+import Link from "next/link";
 
 
 export default function FeaturesPage() {
@@ -44,7 +45,7 @@ export default function FeaturesPage() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
       <DashboardHeader />
 
-      <main className="container mx-auto px-4 py-16">
+      <main className="container mt-20 mx-auto px-4 py-16">
         {/* Hero Section */}
         <section className="text-center mb-20">
           <h1 className="text-4xl md:text-5xl font-bold  mb-4 bg-gradient-to-r from-[#00f2fe] to-[#4facfe] bg-clip-text text-transparent">
@@ -128,9 +129,9 @@ export default function FeaturesPage() {
               <p className="text-xl text-white/90 mb-8">
                 Start your free trial today and experience the power of AI-powered document processing.
               </p>
-               <Button className="max-w-md bg-gradient-to-r from-[#00f2fe] to-[#4facfe] hover:from-[#4facfe] hover:to-[#00f2fe] text-white font-bold text-lg py-6 px-8 rounded-full transform transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-[#00f2fe]/40">
-                                Start Your Free Trial
-                              </Button>
+              <Button className="max-w-md bg-gradient-to-r from-[#00f2fe] to-[#4facfe] hover:from-[#4facfe] hover:to-[#00f2fe] text-white font-bold text-lg py-6 px-8 rounded-full transform transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-[#00f2fe]/40">
+                <Link href="/dashboard">Get Started – Free Trial</Link>
+              </Button>
             </div>
           </div>
         </section>
