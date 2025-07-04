@@ -1,4 +1,6 @@
 
+// need to fix pricing reidrection on home page 
+
 // // gsutil cors set cors.json gs://saascribe-1efb0.firebasestorage.app
 // // "use client"
 

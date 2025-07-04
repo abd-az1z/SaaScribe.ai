@@ -2,6 +2,7 @@
 
 import { Check, Zap, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 type ButtonVariant = "default" | "outline" | "secondary" | "ghost" | "link" | "destructive" | null | undefined;
 
@@ -20,7 +21,7 @@ export default function PricingSection() {
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-8 max-w-5xl mx-auto">
           {/* Free Plan */}
-          <div className="group relative rounded-3xl bg-white/80 backdrop-blur-sm border border-white/20 p-8 shadow-xl transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
+          <Link href="/dashboard/upgrade" className="group relative rounded-3xl bg-white/80 backdrop-blur-sm border border-white/20 p-8 shadow-xl transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
             <div className="mb-8">
               <div className="flex items-center justify-between">
                 <h3 className="text-2xl font-bold text-gray-900 group-hover:bg-gradient-to-r group-hover:from-[#00f2fe] group-hover:to-[#4facfe] group-hover:bg-clip-text group-hover:text-transparent transition-all">
@@ -60,10 +61,10 @@ export default function PricingSection() {
             >
               Get Started
             </Button>
-          </div>
+          </Link>
 
           {/* Pro Plan */}
-          <div className="group relative rounded-3xl bg-white/80 backdrop-blur-sm border border-white/20 p-8 shadow-xl transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 ring-2 ring-[#00f2fe] ring-offset-4 ring-offset-white/50">
+          <Link href="/dashboard/upgrade" className="group relative rounded-3xl bg-white/80 backdrop-blur-sm border border-white/20 p-8 shadow-xl transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 ring-2 ring-[#00f2fe] ring-offset-4 ring-offset-white/50">
             <div className="absolute top-10 right-22">
               <span className="inline-flex items-center rounded-full bg-gradient-to-r from-[#00f2fe] to-[#4facfe] px-4 py-1.5 text-sm font-semibold text-white shadow-lg">
                 <Sparkles className="mr-1.5 h-4 w-4" />
@@ -126,7 +127,7 @@ export default function PricingSection() {
             >
               Upgrade Now
             </Button>
-          </div>
+          </Link>
         </div>
         
         <div className="mt-16 text-center">

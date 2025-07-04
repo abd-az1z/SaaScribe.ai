@@ -41,9 +41,11 @@ function useSubsscription() {
 
         //getting users data
         const data = snapshot.data(); 
+        // console.log("debug 1",data)
         if(!data) return;
+        // console.log("debug 2",data)
 
-        setHasActiveMembership(data.activeMembership)
+        setHasActiveMembership(data.hasActiveMembership)
 
 
 

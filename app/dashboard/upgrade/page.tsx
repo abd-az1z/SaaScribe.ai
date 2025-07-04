@@ -9,13 +9,12 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import PricingSection from "@/components/PricingSection";
 import { useUser } from "@clerk/nextjs";
-import { useRouter } from "next/router";
 import useSubsscription from "@/hooks/useSubsscription";
 import { useTransition } from "react";
 import getStripe from "@/lib/stripe-js";
 import { createCheckoutSession } from "@/actions/createCheckoutSession";
+import { createStripePortal } from "@/actions/createStripePortal";
 
 const faqs = [
   {
@@ -80,31 +79,6 @@ export default function PricingPage() {
   // using or pulling the custom hook for accessing users subscription status
   const { hasActiveMembership, loading } = useSubsscription();
 
-
-  // const handleUpgrade = ()=>{
-  //  if(!user) return;
-
-  //  const userDetails={
-  //    email: user.primaryEmailAddress?.toString()!,
-  //    name: user.fullName!,
-  //  };
-  //  startTransition( async()=>{
-  //   // load stripe
-  //   const stripe = await getStripe();
-  //   if(hasActiveMembership){
-  //     // create stripe portal..
-
-
-
-  //     const sessionId = await createCheckoutSession(userDetails);
-
-  //     await stripe?.redirectToCheckout({ sessionId });
-  //   }
-    
-  //  })
-   
-  // }
-
   const handleUpgrade = async () => {
     if (!user) return;
   
@@ -115,7 +89,16 @@ export default function PricingPage() {
           console.error('Stripe failed to initialize');
           return;
         }
+
+        if (hasActiveMembership) {
+          const portalUrl = await createStripePortal();
+          if (portalUrl) {
+            window.location.href = portalUrl;
+            return;
+          }
+        }
   
+        // Only proceed to checkout for new subscriptions
         const sessionId = await createCheckoutSession({
           email: user.primaryEmailAddress?.toString() || '',
           name: user.fullName || '',

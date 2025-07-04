@@ -79,7 +79,7 @@ function Documents() {
       </div>
 
       {documents.length === 0 ? (
-        <div className="text-center py-12 bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20">
+        <div className="text-center py-12 px-4 bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20">
           <FileSearch className="mx-auto h-12 w-12 text-[#00f2fe]" />
           <h3 className="mt-2 text-2xl font-bold text-gray-900">No documents found</h3>
           <p className="mt-1 text-lg text-gray-600">
