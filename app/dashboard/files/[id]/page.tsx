@@ -42,7 +42,7 @@ export default async function ChatToFilePage({
   }
 
   return (
-    <div className="h-full px-2 sm:px-0 ">
+    <div className="h-full pt-26 px-2 sm:px-0 ">
       <div className="flex flex-col lg:flex-row h-full bg-gradient-to-br from-white via-[#f8fafc] to-[#e0f2fe] overflow-hidden">
         {/* PDF Viewer Section - Left */}
         <div className="w-full lg:w-1/2  flex flex-col bg-white/95 backdrop-blur-sm border-b lg:border-b-0 lg:border-r border-gray-200/50 shadow-sm lg:shadow-lg">

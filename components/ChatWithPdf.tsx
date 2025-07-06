@@ -9,11 +9,9 @@ import { db } from "@/firebase/firebase";
 import { Loader } from "lucide-react";
 import { askQuestion } from "@/actions/askQuestion";
 import { format } from "date-fns";
-import { User } from "@clerk/nextjs";
 import { Bot } from "lucide-react";
 import Image from "next/image";
-
-// import {  } from "react"
+import { toast } from "sonner";
 
 // message
 export type Message = {
@@ -75,10 +73,38 @@ function ChatWithPdf({ id }: { id: string }) {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    const q = input;
+    const q = input.trim();
+    if (!q) return;
+
+    // Check if we should show the limit message
+    const userMessages = messages.filter(msg => msg.role === 'human');
+    const freeLimit = 3;
+    const proLimit = 100;
+    
+    // Check if user has active membership (you'll need to get this from your auth context)
+    const hasActiveMembership = user?.publicMetadata?.hasActiveMembership || false;
+    
+    if (!hasActiveMembership && userMessages.length >= freeLimit) {
+      toast.error(`You've reached the free plan limit of ${freeLimit} questions.`, {
+        action: {
+          label: 'Upgrade',
+          onClick: () => {
+            // Add your upgrade navigation logic here
+            console.log('Navigate to upgrade page');
+          },
+        },
+      });
+      return;
+    }
+
+    if (hasActiveMembership && userMessages.length >= proLimit) {
+      toast.error(`You've reached the PRO plan limit of ${proLimit} questions per document.`);
+      return;
+    }
+
     setInput("");
 
-    // optimistic ui update
+    // Optimistic UI update
     setMessages((prev: Message[]) => [
       ...prev,
       {
@@ -101,12 +127,13 @@ function ChatWithPdf({ id }: { id: string }) {
       });
 
       if (!success) {
-        // toast
+        toast.error(message);
+        
         setMessages((prev) =>
           prev.slice(0, prev.length - 1).concat([
             {
               role: "ai",
-              message: `Whoops...${message}`,
+              message: message.includes("limit") ? message : `Whoops... ${message}`,
               createdAt: new Date(),
             },
           ])

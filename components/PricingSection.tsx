@@ -1,12 +1,75 @@
 "use client";
 
-import { Check, Zap, Sparkles } from "lucide-react";
+import { Check, Zap, Sparkles, CheckCircle2 } from "lucide-react";
+import { createStripePortal } from "@/actions/createStripePortal";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { useUser } from "@clerk/nextjs";
+import useSubsscription from "@/hooks/useSubsscription";
 
 type ButtonVariant = "default" | "outline" | "secondary" | "ghost" | "link" | "destructive" | null | undefined;
 
 export default function PricingSection() {
+  const { isLoaded: isUserLoaded } = useUser();
+  const { hasActiveMembership, loading: subscriptionLoading } = useSubsscription();
+  const isLoading = !isUserLoaded || subscriptionLoading;
+  if (isLoading) {
+    return (
+      <div className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-white via-[#f8fafc] to-[#e0f2fe]">
+        <div className="max-w-6xl mx-auto text-center">
+          <div className="h-14 bg-gray-200 rounded-full w-1/3 mx-auto mb-4 animate-pulse"></div>
+          <div className="h-6 bg-gray-200 rounded w-1/2 mx-auto mb-16 animate-pulse"></div>
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-8 max-w-5xl mx-auto">
+            {[1, 2].map((i) => (
+              <div key={i} className="h-[600px] bg-white/80 rounded-3xl p-8 animate-pulse"></div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (hasActiveMembership) {
+    return (
+      <div className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-white via-[#f8fafc] to-[#e0f2fe]">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="inline-flex items-center justify-center px-6 py-2 rounded-full bg-gradient-to-r from-purple-100 to-pink-100 mb-6">
+            <CheckCircle2 className="w-5 h-5 text-purple-600 mr-2" />
+            <span className="text-purple-700 font-medium">You&apos;re on the PRO Plan</span>
+          </div>
+          <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent mb-6">
+            Thanks for being a PRO Member!
+          </h2>
+          <p className="text-xl text-gray-700 max-w-2xl mx-auto mb-12">
+            You have full access to all premium features. Manage your subscription anytime.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button 
+              onClick={async () => {
+                try {
+                  const portalUrl = await createStripePortal();
+                  if (portalUrl) window.location.href = portalUrl;
+                } catch (error) {
+                  console.error('Error redirecting to portal:', error);
+                }
+              }}
+              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold text-lg py-6 px-8 rounded-full transform transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-purple-500/40"
+            >
+              Manage Subscription
+            </Button>
+            <Button 
+              asChild
+              variant="outline"
+              className="border-2 border-gray-200 text-gray-700 font-semibold text-lg py-6 px-8 rounded-full transform transition-all duration-300 hover:scale-105 hover:bg-white/50"
+            >
+              <Link href="/dashboard">Go to Dashboard</Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-white via-[#f8fafc] to-[#e0f2fe]">
       <div className="max-w-6xl mx-auto">

@@ -27,6 +27,30 @@ export async function askQuestion(id: string, question: string) {
     (doc) => doc.data().role === "human"
   );
 
+  // 
+  const userRef = await adminDb.collection("users").doc(userId).get();
+
+  // Check user's plan and apply appropriate limits
+  const hasActiveMembership = userRef.data()?.hasActiveMembership;
+  
+  if (!hasActiveMembership && userMessagesCount.length >= FREE_PLAN_LIMIT) {
+    return {
+      success: false,
+      message: `You've reached the free plan limit of ${FREE_PLAN_LIMIT} questions per document. Upgrade to PRO to ask more questions!`
+    };
+  }
+
+  if (hasActiveMembership && userMessagesCount.length >= PRO_PLAN_LIMIT) {
+    return {
+      success: false,
+      message: `You have reached the PRO plan limit of ${PRO_PLAN_LIMIT} questions per document!`
+    };
+  }
+
+
+
+
+
   //   limiting the pro of free users
   const userMessage: Message = {
     role: "human",

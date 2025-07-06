@@ -1,70 +1,127 @@
-'use client'
+'use client';
 
-import { db } from "@/firebase/firebase";
-import { useUser } from "@clerk/nextjs";
-import { collection, doc } from "firebase/firestore";
-import { useEffect, useState } from "react";
-import { useCollection, useDocument } from "react-firebase-hooks/firestore";
-
-// define free and pro plans
-
+import { useState, useEffect, useMemo } from 'react';
+import { useUser } from '@clerk/nextjs';
+import { collection, query, doc, onSnapshot } from 'firebase/firestore';
+import { db } from '@/firebase/firebase';
 
 // Number of PDFs allowed
-const PRO_PLAN = 30;
-const FREE_PLAN = 3;
+export const FREE_PLAN_LIMIT = 3;
+const PRO_PLAN_MONTHLY_LIMIT = 30; // 30 PDFs per month for Pro users
 
-
-
-function useSubsscription() {
-    const [hasActiveMembership, setHasActiveMembership] = useState(null)
-    const [isOverFileLimit, setIsOverFileLimit] = useState(false)
-    const { user } = useUser();
-
-    // listen to user document
-    const [snapshot, loading, error] = useDocument(
-        user && doc(db,'users',user.id),
-        {
-            snapshotListenOptions: { includeMetadataChanges: true }
-        }
-    );
-
-    // listen to files collection of user
-    const [ fileSnapshot, fileLoading] = useCollection(
-        user && collection(db,'users',user.id,'files'),
-        {
-            snapshotListenOptions: { includeMetadataChanges: true }
-        }
-    );
-
-    useEffect(() => {
-        if(!snapshot) return;
-
-        //getting users data
-        const data = snapshot.data(); 
-        // console.log("debug 1",data)
-        if(!data) return;
-        // console.log("debug 2",data)
-
-        setHasActiveMembership(data.hasActiveMembership)
-
-
-
-    }, [snapshot])
-
-    useEffect(() => {
-        if(!fileSnapshot || !hasActiveMembership===null) return;
-
-        const files = fileSnapshot.docs;
-        const usersLimit  = hasActiveMembership ? PRO_PLAN : FREE_PLAN;
-
-        // debugging
-        // console.log("Checking if user is over file limit...",files.length,usersLimit)
-        
-        setIsOverFileLimit(files.length >= usersLimit)
-        
-    }, [fileSnapshot, hasActiveMembership, PRO_PLAN, FREE_PLAN])
-    return {hasActiveMembership,isOverFileLimit,loading,error,fileLoading}
-   
+interface FileData {
+  id: string;
+  name: string;
+  size: number;
+  downloadUrl: string;
+  uploadedAt?: {
+    seconds: number;
+    nanoseconds: number;
+  };
+  fileType?: string;
+  createdAt?: {
+    toDate: () => Date;
+  };
 }
 
-export default useSubsscription
+export default function useSubsscription() {
+  const { user } = useUser();
+  const [hasActiveMembership, setHasActiveMembership] = useState<boolean | null>(null);
+  const [isOverFileLimit, setIsOverFileLimit] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [files, setFiles] = useState<FileData[]>([]);
+
+  // Check if user has active membership
+  useEffect(() => {
+    if (!user) return;
+
+    const userRef = doc(db, 'users', user.id);
+    const unsubscribe = onSnapshot(userRef, 
+      (doc) => {
+        if (doc.exists()) {
+          setHasActiveMembership(doc.data().hasActiveMembership || false);
+          setLoading(false);
+        }
+      }, 
+      (error) => {
+        console.error('Error fetching user data:', error);
+        setError('Failed to load subscription data');
+        setLoading(false);
+      }
+    );
+
+    return () => unsubscribe();
+  }, [user]);
+
+  // Load user's files
+  useEffect(() => {
+    if (!user) return;
+    
+    const filesRef = collection(db, 'users', user.id, 'files');
+    const q = query(filesRef);
+    
+    const unsubscribe = onSnapshot(q, 
+      (snapshot) => {
+        const filesData = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as FileData[];
+        setFiles(filesData);
+      }, 
+      (error) => {
+        console.error('Error fetching files:', error);
+      }
+    );
+
+    return () => unsubscribe();
+  }, [user]);
+
+  // Calculate monthly uploads and limits
+  const { uploadsThisMonth, monthlyLimit } = useMemo(() => {
+    if (!files.length) return { uploadsThisMonth: 0, monthlyLimit: hasActiveMembership ? PRO_PLAN_MONTHLY_LIMIT : FREE_PLAN_LIMIT };
+    
+    if (!hasActiveMembership) {
+      return {
+        uploadsThisMonth: files.length,
+        monthlyLimit: FREE_PLAN_LIMIT
+      };
+    }
+
+    // For pro users, calculate monthly uploads
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+    
+    const monthlyUploads = files.filter(file => {
+      if (!file.uploadedAt?.seconds) return false;
+      const uploadDate = new Date(file.uploadedAt.seconds * 1000);
+      return uploadDate.getMonth() === currentMonth && 
+             uploadDate.getFullYear() === currentYear;
+    });
+
+    return {
+      uploadsThisMonth: monthlyUploads.length,
+      monthlyLimit: PRO_PLAN_MONTHLY_LIMIT
+    };
+  }, [files, hasActiveMembership]);
+
+  // Update isOverFileLimit based on user's plan
+  useEffect(() => {
+    if (hasActiveMembership === null) return;
+    
+    const limit = hasActiveMembership ? PRO_PLAN_MONTHLY_LIMIT : FREE_PLAN_LIMIT;
+    const currentUsage = hasActiveMembership ? uploadsThisMonth : files.length;
+    
+    setIsOverFileLimit(currentUsage >= limit);
+  }, [hasActiveMembership, uploadsThisMonth, files.length]);
+
+  return {
+    hasActiveMembership,
+    isOverFileLimit,
+    uploadsThisMonth,
+    monthlyLimit,
+    loading,
+    error,
+    fileCount: files.length
+  };
+}

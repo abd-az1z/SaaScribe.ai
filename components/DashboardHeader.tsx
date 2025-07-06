@@ -6,10 +6,14 @@ import { Button } from "./ui/button";
 import Image from "next/image";
 import logo from "@/public/SaaScribelogo.png";
 import { FiUploadCloud, FiFileText, FiZap, FiPlus, FiHome } from "react-icons/fi";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useTransition } from "react";
+import useSubsscription from "@/hooks/useSubsscription";
+import { createStripePortal } from "@/actions/createStripePortal";
 
 const DashboardHeader = () => {
   const [isScrolled, setIsScrolled] = useState(false);
+  const { hasActiveMembership } = useSubsscription();
+  const [isPending, startTransition] = useTransition();
 
   // Handle scroll for header
   useEffect(() => {
@@ -44,13 +48,45 @@ const DashboardHeader = () => {
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center gap-3 lg:gap-4">
               <Button
-                asChild
-                className="gap-2 text-white bg-gradient-to-r from-[#00f2fe] to-[#4facfe] hover:from-[#4facfe] transition-all duration-300 hover:scale-105 hover:to-[#00f2fe] whitespace-nowrap"
+                onClick={(e) => {
+                  if (hasActiveMembership) {
+                    e.preventDefault();
+                    startTransition(async () => {
+                      try {
+                        const portalUrl = await createStripePortal();
+                        if (portalUrl) {
+                          window.location.href = portalUrl;
+                        }
+                      } catch (error) {
+                        console.error('Error redirecting to portal:', error);
+                      }
+                    });
+                  }
+                }}
+                asChild={!hasActiveMembership}
+                disabled={isPending}
+                className={`gap-2 text-white whitespace-nowrap ${
+                  hasActiveMembership
+                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 cursor-pointer'
+                    : 'bg-gradient-to-r from-[#00f2fe] to-[#4facfe] hover:from-[#4facfe] hover:to-[#00f2fe]'
+                } transition-all duration-300 relative overflow-hidden`}
               >
-                <Link href="/dashboard/upgrade">
-                  <FiZap className="w-4 h-4 sm:w-5 sm:h-5" />
-                  <span>Upgrade</span>
-                </Link>
+                {hasActiveMembership ? (
+                  <div className="flex items-center gap-2 px-4 py-2">
+                    {isPending ? (
+                      <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      </div>
+                    ) : null}
+                    <FiZap className={`w-4 h-4 sm:w-5 sm:h-5 ${isPending ? 'opacity-50' : ''}`} />
+                    <span className={isPending ? 'opacity-50' : ''}>PRO</span>
+                  </div>
+                ) : (
+                  <Link href="/dashboard/upgrade">
+                    <FiZap className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <span>Upgrade</span>
+                  </Link>
+                )}
               </Button>
 
               <Button
@@ -78,13 +114,6 @@ const DashboardHeader = () => {
 
             {/* Mobile Icons */}
             <div className="md:hidden flex items-center -gap-2">
-              {/* <Link 
-                href="/dashboard" 
-                className="p-2 rounded-md text-gray-600 hover:bg-gray-100 transition-colors"
-                aria-label="Documents"
-              >
-                <FiHome className="w-5 h-5" />
-              </Link> */}
               <Link 
                 href="/dashboard/upload" 
                 className="p-2 rounded-md text-[#00f2fe] hover:bg-gray-100 transition-colors"
@@ -93,11 +122,36 @@ const DashboardHeader = () => {
                 <FiPlus className="w-5 h-5" />
               </Link>
               <Link 
-                href="/dashboard/upgrade" 
-                className="p-2 rounded-md text-[#00f2fe] hover:bg-gray-100 transition-colors"
-                aria-label="Upgrade"
+                href={hasActiveMembership ? '#' : '/dashboard/upgrade'}
+                onClick={async (e) => {
+                  if (hasActiveMembership) {
+                    e.preventDefault();
+                    startTransition(async () => {
+                      try {
+                        const portalUrl = await createStripePortal();
+                        if (portalUrl) {
+                          window.location.href = portalUrl;
+                        }
+                      } catch (error) {
+                        console.error('Error redirecting to portal:', error);
+                      }
+                    });
+                  }
+                }}
+                className={`p-2 rounded-md flex-col justify-center items-center transition-colors relative overflow-hidden ${
+                  hasActiveMembership ? 'text-purple-500' : 'text-[#00f2fe]'
+                } hover:bg-gray-100 ${isPending ? 'pointer-events-none' : ''}`}
+                aria-label={hasActiveMembership ? 'Manage Subscription' : 'Upgrade'}
               >
-                <FiZap className="w-5 h-5" />
+                {isPending && (
+                  <div className="absolute inset-0 bg-white/50 flex items-center justify-center">
+                    <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                  </div>
+                )}
+                <FiZap className={`w-5 h-5 ${isPending ? 'opacity-50' : ''}`} />
+                <span className={`text-[12px] ${isPending ? 'opacity-50' : ''}`}>
+                  {hasActiveMembership ? 'PRO' : 'Upgrade'}
+                </span>
               </Link>
             </div>
 
