@@ -9,15 +9,13 @@ _“Let Your Documents Speak.”_
 ## 💰 Pricing & Plans
 
 ### 🔍 Free Plan
-- 📁 10 PDF uploads per month
-- 💬 Basic AI chat
-- 📊 Basic analytics
-- 🔐 Secure document storage
+- 📁 3 PDF uploads per month
+- 💬 Basic AI chat with 3 Questions/Pdf
 - 📱 Mobile-responsive UI
 
 ### 🌟 Premium Plan (Coming Soon)
 - 📁 100 PDF uploads per month
-- 💬 Advanced AI chat
+- 💬 Advanced AI chat wirh 100 Questions/Pdf
 - 📊 Detailed analytics
 - 📈 Document version history
 - 🔐 Enterprise-grade security
