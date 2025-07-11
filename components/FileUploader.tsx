@@ -1,33 +1,37 @@
 "use client";
 
-import useUpload, { StatusText } from "@/hooks/useUpload";
+import React, { useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
-import {
-  FileText,
-  Upload,
-  Loader2,
-  Rocket,
-  Check,
-} from "lucide-react";
+import { FileText, Upload, Loader2, Rocket, Check } from "lucide-react";
+import useUpload, { StatusText } from "@/hooks/useUpload";
 
-function FileUploader() {
-  const { progress, status, fileId, handleUpload } = useUpload();
+const FileUploader = () => {
+  const { status, progress, fileId, handleUpload } = useUpload();
   const router = useRouter();
 
   useEffect(() => {
-    if (fileId) {
+    console.log("Status:", status);
+  console.log("File ID:", fileId);
+    if (status === StatusText.UPLOADED && fileId) {
       router.push(`/dashboard/files/${fileId}`);
     }
-  }, [fileId, router]);
+  }, [status, fileId, router]);
 
-  const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    const file = acceptedFiles[0];
-    if (file) {
-      await handleUpload(file);
-    }
-  }, [handleUpload]);
+  const onDrop = useCallback(
+    async (acceptedFiles: File[]) => {
+      const file = acceptedFiles[0];
+      if (file) {
+        try {
+          // await uploadFile(file);
+          await handleUpload(file);
+        } catch (error) {
+          console.error("Error uploading file:", error);
+        }
+      }
+    },
+    [handleUpload]
+  );
 
   const {
     getRootProps,
@@ -42,12 +46,12 @@ function FileUploader() {
     accept: { "application/pdf": [".pdf"] },
   });
 
-  const statusIcons: { [key in StatusText]: JSX.Element } = {
+  const statusIcons = {
     [StatusText.UPLOADING]: <Loader2 className="animate-spin h-6 w-6 text-blue-500" />,
     [StatusText.UPLOADED]: <Check className="h-6 w-6 text-green-500" />,
     [StatusText.SAVING]: <Rocket className="h-6 w-6 text-yellow-500" />,
     [StatusText.GENERATING]: <Upload className="h-6 w-6 text-purple-500" />,
-  };
+  } as const;
 
   const uploadInProgress = status !== null && progress !== null && progress < 100;
 
@@ -59,11 +63,11 @@ function FileUploader() {
           <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
             <div
               className="bg-gradient-to-r from-[#00f2fe] to-[#4facfe] h-2.5 transition-all duration-300"
-              style={{ width: `${progress}%` }}
+              style={{ width: `${progress ?? 0}%` }}
             />
           </div>
           <div className="flex items-center space-x-2 text-sm text-gray-600">
-            {status && statusIcons[status]}
+            {status && statusIcons[status as keyof typeof statusIcons]}
             <span>{status}</span>
           </div>
         </div>

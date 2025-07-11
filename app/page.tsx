@@ -9,6 +9,8 @@ import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
 import useSubsscription from "@/hooks/useSubsscription";
 import { FiCheckCircle } from "react-icons/fi";
+import { SignInButton } from "@clerk/nextjs";
+
 
 export default function Home() {
   const { isLoaded: isUserLoaded } = useUser();
@@ -59,6 +61,7 @@ export default function Home() {
                     <Button asChild className="max-w-md bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold text-lg py-6 px-8 rounded-full transform transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-purple-500/40">
                       <Link href="/dashboard">Go to Dashboard</Link>
                     </Button>
+                    
                     <div className="flex items-center gap-2 text-sm text-purple-600">
                       <FiCheckCircle className="w-4 h-4" />
                       <span>PRO Member Benefits Active</span>
@@ -66,9 +69,11 @@ export default function Home() {
                   </div>
                 ) : (
                   <>
-                    <Button asChild className="max-w-md bg-gradient-to-r from-[#00f2fe] to-[#4facfe] hover:from-[#4facfe] hover:to-[#00f2fe] text-white font-bold text-lg py-6 px-8 rounded-full transform transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-[#00f2fe]/40">
-                      <Link href="/dashboard">Get Started – Free Trial</Link>
-                    </Button>
+                   <SignInButton mode="modal" fallbackRedirectUrl="/dashboard">
+  <button className="max-w-md bg-gradient-to-r from-[#00f2fe] to-[#4facfe] hover:from-[#4facfe] hover:to-[#00f2fe] text-white font-bold text-lg py-6 px-8 rounded-full transform transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-[#00f2fe]/40">
+    Get Started – Free Trial
+  </button>
+</SignInButton>
                     <Button asChild
                       variant="outline"
                       className="max-w-md border-2 border-gray-200 text-gray-700 font-semibold text-lg py-6 px-8 rounded-full transform transition-all duration-300 hover:scale-105 hover:bg-white/50"

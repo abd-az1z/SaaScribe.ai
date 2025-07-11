@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Upload, FileText } from "lucide-react";
+import { Upload } from "lucide-react";
 
 const PlaceholderDocument = () => {
   const router = useRouter();

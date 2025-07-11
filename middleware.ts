@@ -1,19 +1,15 @@
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
-
-// This matcher targets all URLs under /dashboard, like /dashboard, /dashboard/settings, /dashboard/anything
-const isDashboardRoute = createRouteMatcher(['/dashboard(.*)']);
-
-export default clerkMiddleware(async (auth, req) => {
-  if (isDashboardRoute(req)) {
-    // Only dashboard routes are protected
-    await auth.protect();
-  }
-});
-
+import { clerkMiddleware } from '@clerk/nextjs/server';
+ 
+// This example protects all routes including api/trpc routes
+// Please edit this to allow other routes to be public as needed.
+// See https://clerk.com/docs/references/nextjs/clerk-middleware for more information about configuring your middleware
+export default clerkMiddleware();
+ 
 export const config = {
   matcher: [
-    '/((?!.*\\..*|_next).*)',  // applies to all app routes except static and internal files
-    '/',                       // root
-    '/(api|trpc)(.*)',         // API routes
+    // Skip all internal paths (_next, images, etc.)
+    '/((?!_next/image|_next/static|favicon.ico).*)',
+    // Include all paths
+    '/',
   ],
 };

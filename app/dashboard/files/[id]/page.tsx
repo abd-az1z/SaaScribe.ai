@@ -1,59 +1,39 @@
-import ChatWithPdf from "@/components/ChatWithPdf";
-import PdfView from "@/components/PdfView";
-import { adminDb } from "@/firebase/firebaseAdmin";
-import { auth } from "@clerk/nextjs/server";
-import { notFound } from "next/navigation";
+'use client';
 
-export default async function ChatToFilePage({
-  params,
-}: {
-  params: { id: string };
-}) {
-  // const awaitedParams = await params;
-  // const { id: docId } = awaitedParams;
-  const { id: docId } = await params;
+import dynamic from 'next/dynamic';
+import { useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
-  const { userId } = await auth();
-
-  if (!userId || !docId) {
-    return notFound();
-  }
-
-  const ref = await adminDb
-    .collection("users")
-    .doc(userId)
-    .collection("files")
-    .doc(docId)
-    .get();
-
-  const url = ref.data()?.downloadUrl;
-  const fileDataRaw = ref.data();
-  const fileData = fileDataRaw
-    ? {
-        ...fileDataRaw,
-        createdAt: fileDataRaw.createdAt?.toDate
-          ? fileDataRaw.createdAt.toDate().toISOString()
-          : null,
-      }
-    : null;
-
-  if (!url) {
-    return notFound();
-  }
-
-  return (
-    <div className="h-full pt-26 px-2 sm:px-0 ">
-      <div className="flex flex-col lg:flex-row h-full bg-gradient-to-br from-white via-[#f8fafc] to-[#e0f2fe] overflow-hidden">
-        {/* PDF Viewer Section - Left */}
-        <div className="w-full lg:w-1/2  flex flex-col bg-white/95 backdrop-blur-sm border-b lg:border-b-0 lg:border-r border-gray-200/50 shadow-sm lg:shadow-lg">
-          <PdfView url={url} fileData={fileData} />
-        </div>
-
-        {/* Chat Section - Right */}
-        <div className="w-full lg:w-1/2  flex flex-col bg-white/95 lg:bg-white/90 backdrop-blur-sm shadow-sm lg:shadow-lg overflow-hidden">
-          <ChatWithPdf id={docId} />
-        </div>
+const ChatToFilePage = dynamic(
+  () => import('./ChatToFilePage'),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
       </div>
-    </div>
-  );
+    )
+  }
+);
+
+export default function Page() {
+  const searchParams = useSearchParams();
+  const [params, setParams] = useState<{ id: string } | null>(null);
+  
+  useEffect(() => {
+    const id = window.location.pathname.split('/').pop();
+    if (id) {
+      setParams({ id });
+    }
+  }, [searchParams]);
+  
+  if (!params) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+  
+  return <ChatToFilePage params={params} />;
 }

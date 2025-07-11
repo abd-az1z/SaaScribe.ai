@@ -141,7 +141,7 @@ console.log("Stripe-Signature:", headersList.get("stripe-signature"));
     }
 
     case "customer.subscription.deleted":
-    case "customer.subscription.canceled": {
+    case "customer.subscription.updated": {
       const subscription = event.data.object as Stripe.Subscription;
       const customerId = subscription.customer as string;
 

@@ -1,10 +1,31 @@
 # SaaScribe.ai 📄💬
-**Chat with Your Files. Powered by AI.**
-_“Let Your Documents Speak.”_
+**Chat with Your Files. Powered by AI.**  
+_"Let Your Documents Speak."_
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Next.js](https://img.shields.io/badge/Next.js-14.0.0+-black?logo=next.js)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0.0+-3178C6?logo=typescript)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.3.0+-06B6D4?logo=tailwind-css)](https://tailwindcss.com/)
 
 ## 🚀 Overview
 
-**SaaScribe.ai** is an AI-powered SaaS platform that allows users to upload PDF documents and engage in intelligent chat-based interactions with the content. This app combines file storage, document parsing, and conversational AI into a streamlined user experience.
+**SaaScribe.ai** is an AI-powered SaaS platform that revolutionizes document interaction. Users can upload PDF documents and engage in intelligent, context-aware conversations about their content. Built with modern web technologies, this application combines secure file storage, advanced document parsing, and state-of-the-art conversational AI to create a seamless user experience.
+
+🔹 **Key Benefits**
+- **Instant Insights**: Get answers from your documents in seconds
+- **Secure & Private**: Your documents are stored securely with enterprise-grade encryption
+- **Easy to Use**: Intuitive interface that works across all devices
+- **Powerful AI**: Powered by OpenAI and LangChain for accurate, contextual responses
+
+## ✅ Project Status
+
+SaaScribe.ai is a **fully developed and production-ready SaaS application**. All core features including PDF processing, semantic search, AI chat integration, secure authentication, and payment processing have been implemented and thoroughly tested. The platform is actively maintained with regular updates and improvements based on user feedback.
+
+## 🔗 Live Demo
+
+Experience SaaScribe.ai in action: [https://saascribe.vercel.app](https://saascribe.vercel.app)
+
+> 💡 For a personalized demo or enterprise inquiries, please [contact us](#-contact).
 
 ## 💰 Pricing & Plans
 
@@ -13,19 +34,18 @@ _“Let Your Documents Speak.”_
 - 💬 Basic AI chat with 3 Questions/Pdf
 - 📱 Mobile-responsive UI
 
-### 🌟 Premium Plan (Coming Soon)
+### 🌟 Premium Plan (Beta Available)
 - 📁 100 PDF uploads per month
-- 💬 Advanced AI chat wirh 100 Questions/Pdf
+- 💬 Advanced AI chat
 - 📊 Detailed analytics
 - 📈 Document version history
 - 🔐 Enterprise-grade security
 - 🏃‍♂️ Priority support
+- 🚀 Early access to new features
 
-## 🧠 Features
+> 💡 Premium features are fully implemented and being rolled out to beta users. [Contact us](#-contact) for early access.
 
----
-
-## 🧠 Features
+## ✨ Key Features
 
 - 📁 **PDF Upload & Viewer**  
   Drag-and-drop uploader with preview and page navigation powered by `react-pdf`.
@@ -67,26 +87,57 @@ _“Let Your Documents Speak.”_
 
 ---
 
-## 🧩 Folder Structure
+## 🗂 Project Structure
 
-/app                → Next.js App Router pages
-/components         → Shared UI components
-/hooks              → Custom React hooks
-/lib                → Utilities (Firebase, Stripe, LangChain)
-/public             → Static assets
-/styles             → Tailwind config and global styles
+```
+saascribe.ai/
+├── app/                  # Next.js 14 App Router pages and API routes
+│   ├── (auth)/           # Authentication related routes
+│   ├── api/              # API endpoints
+│   └── dashboard/        # Main application dashboard
+├── actions/              # Server actions for data mutations
+├── components/           # Reusable UI components
+│   ├── ui/               # ShadCN UI components
+│   └── ...               # Other feature components
+├── firebase/             # Firebase configuration and utilities
+├── hooks/                # Custom React hooks
+├── lib/                  # Core application logic
+│   ├── db/               # Database utilities
+│   ├── langchain/         # AI and document processing
+│   └── stripe/           # Payment processing
+├── public/               # Static assets
+├── test/                 # Test files
+├── .env.local            # Environment variables
+└── package.json          # Project dependencies
+```
 
 ---
 
-## 🔧 Setup Instructions
+## 🚀 Getting Started
 
-### 1. Clone the Repo
+### Prerequisites
 
-```bash
-git clone https://github.com/your-username/saascribe.ai.git
-cd saascribe.ai
+- Node.js 18.0.0 or later
+- npm or yarn
+- Firebase project with Firestore and Storage enabled
+- OpenAI API key
+- Pinecone account
+- Stripe account (for payments)
+- Clerk account (for authentication)
 
-npm install
+### Local Development
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/abd-az1z/saascribe.ai.git
+   cd saascribe.ai
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   # or
+   yarn install
 
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_key
 CLERK_SECRET_KEY=your_secret

@@ -1,26 +1,21 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from 'react';
-import { useUser } from "@clerk/nextjs";
-import { db } from "@/firebase/firebase";
-import { collection, query, orderBy, onSnapshot, deleteDoc, doc } from "firebase/firestore";
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { format } from 'date-fns';
-import Link from 'next/link';
-import { FileText, Clock, Loader2, FileSearch, Eye, Trash2, Download, CheckCircle2, Zap, FileDown } from 'lucide-react';
+import { FileText, Clock, Loader2, FileSearch, Eye, Trash2, Download, CheckCircle2, Zap } from 'lucide-react';
 import { toast } from "sonner";
-import useSubsscription from "@/hooks/useSubsscription";
 import { Progress } from "./ui/progress";
 import { cn } from "@/lib/utils";
+import Link from 'next/link';
 
-interface Document {
+export interface Document {
   id: string;
   name: string;
   fileType?: string;
-  createdAt?: {
-    toDate: () => Date;
-  };
+  createdAt?: Date | string | { toDate: () => Date };
   downloadUrl: string;
   size: number;
+  userId: string;
 }
 
 function formatFileSize(bytes: number): string {
@@ -29,55 +24,124 @@ function formatFileSize(bytes: number): string {
   return `${mb.toFixed(2)} MB`;
 }
 
-export default function Documents() {
-  const { user } = useUser();
-  const { hasActiveMembership, isOverFileLimit } = useSubsscription();
-  const [documents, setDocuments] = useState<Document[]>([]);
-  const [loading, setLoading] = useState(true);
+interface DocumentsProps {
+  initialDocuments?: Document[];
+  hasActiveMembership: boolean;
+  isOverFileLimit: boolean;
+  userId: string;
+  maxDocuments: number;
+  usedSpace: number;
+  storageLimit: number;
+}
+
+export default function Documents({ 
+  initialDocuments = [], 
+  hasActiveMembership, 
+  isOverFileLimit, 
+  userId,
+  maxDocuments,
+  usedSpace,
+  storageLimit
+}: DocumentsProps) {
+  const [documents, setDocuments] = useState<Document[]>(initialDocuments);
+  const [loading, setLoading] = useState(!initialDocuments.length);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   
-  // Calculate document limits and usage
-  const maxDocuments = hasActiveMembership ? 30 : 3;
-  const usedSpace = documents.reduce((total, doc) => total + (doc.size || 0), 0);
-  const storageLimit = 100 * 1024 * 1024; // 100MB in bytes
-  const spacePercentage = Math.min(100, (usedSpace / storageLimit) * 100);
+  const spacePercentage = useMemo(() => 
+    Math.min(100, (usedSpace / storageLimit) * 100)
+  , [usedSpace, storageLimit]);
 
-  // Fetch documents on mount
-  useEffect(() => {
-    if (!user) return;
+  // Type guard for Firestore Timestamp
+  interface FirestoreTimestamp {
+    toDate: () => Date;
+    // Add other properties of Firestore Timestamp if needed
+  }
 
-    const q = query(
-      collection(db, `users/${user.id}/files`),
-      orderBy('createdAt', 'desc')
-    );
+  // Helper function to safely convert Firestore timestamp to Date
+  const toDate = (dateInput: unknown): Date | null => {
+    if (!dateInput) return null;
+    
+    try {
+      if (dateInput instanceof Date) {
+        return dateInput;
+      } else if (typeof dateInput === 'string') {
+        const date = new Date(dateInput);
+        return isNaN(date.getTime()) ? null : date;
+      } else if (dateInput && 
+                typeof dateInput === 'object' && 
+                'toDate' in dateInput && 
+                typeof (dateInput as FirestoreTimestamp).toDate === 'function') {
+        return (dateInput as FirestoreTimestamp).toDate();
+      }
+    } catch (error) {
+      console.error('Error converting to date:', error);
+    }
+    
+    return null;
+  };
+  
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const docs = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Document[];
-      setDocuments(docs);
-      setLoading(false);
-    });
 
-    return () => unsubscribe();
-  }, [user]);
-
-  const handleDeleteDocument = async (docId: string, e: React.MouseEvent) => {
+  const handleDeleteDocument = useCallback(async (docId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!user) return;
+    if (!userId) return;
 
     try {
       setDeletingId(docId);
-      await deleteDoc(doc(db, `users/${user.id}/files/${docId}`));
+      // Optimistic UI update
+      setDocuments(prev => prev.filter(doc => doc.id !== docId));
+      
+      const { deleteDoc, doc } = await import('firebase/firestore');
+      const { db } = await import('@/firebase/firebase');
+      
+      await deleteDoc(doc(db, `users/${userId}/files/${docId}`));
       toast.success('Document deleted successfully');
     } catch (error) {
       console.error('Error deleting document:', error);
       toast.error('Failed to delete document');
+      // Revert optimistic update on error
+      if (initialDocuments.length) {
+        setDocuments(initialDocuments);
+      }
     } finally {
       setDeletingId(null);
     }
-  };
+  }, [userId, initialDocuments]);
+
+  // Only subscribe to real-time updates if we didn't get initial data
+  useEffect(() => {
+    if (initialDocuments.length > 0) {
+      setLoading(false);
+      return;
+    }
+
+    const setupRealtimeUpdates = async () => {
+      const { collection, query, orderBy, onSnapshot, where } = await import('firebase/firestore');
+      const { db } = await import('@/firebase/firebase');
+      
+      const q = query(
+        collection(db, `users/${userId}/files`),
+        where('userId', '==', userId),
+        orderBy('createdAt', 'desc')
+      );
+
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        const docs = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          userId,
+          ...doc.data(),
+        })) as Document[];
+        setDocuments(docs);
+        setLoading(false);
+      });
+
+      return () => unsubscribe();
+    };
+
+    if (userId) {
+      setupRealtimeUpdates().catch(console.error);
+    }
+  }, [userId, initialDocuments.length]);
 
   if (loading) {
     return (
@@ -170,71 +234,108 @@ export default function Documents() {
       </div>
 
       <div className="mt-8">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Your Documents</h1>
-            <div className="flex items-center mt-2">
-              <p className="text-gray-600">
-                {documents.length} {documents.length === 1 ? 'document' : 'documents'} • {formatFileSize(usedSpace)} used
-              </p>
-              {hasActiveMembership ? (
-                <span className="ml-2 px-2 py-0.5 text-xs font-medium bg-green-100 text-green-800 rounded-full flex items-center">
-                  <CheckCircle2 className="w-3 h-3 mr-1" /> Active
-                </span>
-              ) : (
-                <span className="ml-2 px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-800 rounded-full">
-                  Free Tier
-                </span>
-              )}
-            </div>
-          </div>
-          <div className="flex space-x-3">
-            <Link
-              href="/dashboard/upload"
-              className={`inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white ${
-                isOverFileLimit 
-                  ? "bg-gray-400 cursor-not-allowed" 
-                  : "bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              }`}
-              onClick={(e) => {
-                if (isOverFileLimit) {
-                  e.preventDefault();
-                  toast.error(
-                    hasActiveMembership 
-                      ? "You've reached your monthly document limit. New uploads will be available next month."
-                      : "Free plan is limited to 3 documents. Upgrade to PRO for more."
-                  );
-                }
-              }}
-            >
-              <FileDown className="mr-2 h-4 w-4" />
-              Upload Document
-            </Link>
-            {!hasActiveMembership && (
-              <Link
-                href="/pricing"
-                className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                <Zap className="mr-2 h-4 w-4 text-yellow-500" />
-                Upgrade to Pro
-              </Link>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        {/* Left Side - Heading & Info */}
+        <div className="flex-1">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Your Documents</h1>
+          <div className="flex flex-col sm:flex-row sm:items-center mt-2 gap-2 sm:gap-3">
+            <p className="text-gray-600 text-sm sm:text-base">
+              {documents.length} {documents.length === 1 ? 'document' : 'documents'} • {formatFileSize(usedSpace)} used
+            </p>
+            {hasActiveMembership ? (
+              <span className="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-green-100 text-green-800 rounded-full">
+                <CheckCircle2 className="w-3 h-3 mr-1" /> Active
+              </span>
+            ) : (
+              <span className="inline-block px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-800 rounded-full">
+                Free Tier
+              </span>
             )}
           </div>
         </div>
 
+        {/* Right Side - Actions */}
+        <div className="flex flex-col sm:items-end gap-2 sm:gap-3">
+          <Link
+            href="/dashboard/upload"
+            className={`inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md shadow-sm text-white ${
+              isOverFileLimit
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            }`}
+            onClick={(e) => {
+              if (isOverFileLimit) {
+                e.preventDefault();
+                toast.error(
+                  `You've reached your document limit of ${maxDocuments} documents. Please upgrade to Pro for more.`
+                );
+              }
+            }}
+          >
+            <Download className="mr-2 h-4 w-4" />
+            Upload Document
+          </Link>
+
+          {!hasActiveMembership && (
+            <p className="text-xs text-gray-500 text-center sm:text-right">
+              Free tier limited to {maxDocuments} documents.{" "}
+              <Link href="/pricing" className="font-medium text-blue-600 hover:text-blue-500">
+                Upgrade to Pro
+              </Link>{" "}
+              for unlimited documents.
+            </p>
+          )}
+        </div>
+      </div>
+
         {documents.length === 0 ? (
           <div className="text-center py-12">
             <FileSearch className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No documents</h3>
+            <h3 className="mt-2 text-lg font-medium text-gray-900">No documents</h3>
             <p className="mt-1 text-sm text-gray-500">
               Get started by uploading a new document.
             </p>
+            <div className="mt-6">
+              <Link
+                href="/dashboard/upload"
+                className={`inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white ${
+                  isOverFileLimit
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                }`}
+                onClick={(e) => {
+                  if (isOverFileLimit) {
+                    e.preventDefault();
+                    toast.error(
+                      `You've reached your document limit of ${maxDocuments} documents. Please upgrade to Pro for more.`
+                    );
+                  }
+                }}
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Upload Document
+              </Link>
+              {!hasActiveMembership && (
+                <p className="mt-2 text-xs text-gray-500">
+                  Free tier limited to {maxDocuments} documents.{" "}
+                  <Link
+                    href="/pricing"
+                    className="font-medium text-blue-600 hover:text-blue-500"
+                  >
+                    Upgrade to Pro
+                  </Link>{" "}
+                  for unlimited documents.
+                </p>
+              )}
+            </div>
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {documents.map((document) => {
-              const uploadDate = document.createdAt?.toDate();
-              const isRecent = uploadDate && Date.now() - uploadDate.getTime() < 7 * 24 * 60 * 60 * 1000;
+              // Use the component-level formatDisplayDate function
+
+              const uploadDate = toDate(document.createdAt);
+              const isRecent = uploadDate && (Date.now() - uploadDate.getTime()) < 7 * 24 * 60 * 60 * 1000;
 
               return (
                 <div
@@ -295,27 +396,26 @@ export default function Documents() {
                     )}
                   </div>
 
-                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all opacity-0 group-hover:opacity-100 p-4">
-                    <Link
-                      href={`/dashboard/files/${document.id}`}
-                      className="w-full max-w-[180px] text-center"
-                    >
-                      <span className="inline-flex items-center justify-center w-full px-3 py-1.5 rounded-full bg-white text-sm font-medium text-gray-900 shadow-sm hover:bg-gray-50 transition-colors">
+                  <div className="border-t border-gray-100 mt-3 pt-3">
+                    <div className="flex items-center justify-between">
+                      <Link
+                        href={`/dashboard/files/${document.id}`}
+                        className="inline-flex items-center text-sm text-gray-600 hover:text-blue-600 px-2 py-1 rounded hover:bg-blue-50"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <Eye className="h-4 w-4 mr-1.5" />
-                        View Document
-                      </span>
-                    </Link>
-                    <a
-                      href={document.downloadUrl}
-                      download={document.name}
-                      className="w-full max-w-[180px] text-center"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <span className="inline-flex items-center justify-center w-full px-3 py-1.5 rounded-full bg-white text-sm font-medium text-blue-600 shadow-sm hover:bg-blue-50 transition-colors">
+                        View
+                      </Link>
+                      <a
+                        href={document.downloadUrl}
+                        download={document.name}
+                        className="inline-flex items-center text-sm text-gray-600 hover:text-blue-600 px-2 py-1 rounded hover:bg-blue-50"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <Download className="h-4 w-4 mr-1.5" />
                         Download
-                      </span>
-                    </a>
+                      </a>
+                    </div>
                   </div>
                 </div>
               );

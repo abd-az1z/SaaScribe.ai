@@ -7,8 +7,6 @@ import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
 import useSubsscription from "@/hooks/useSubsscription";
 
-type ButtonVariant = "default" | "outline" | "secondary" | "ghost" | "link" | "destructive" | null | undefined;
-
 export default function PricingSection() {
   const { isLoaded: isUserLoaded } = useUser();
   const { hasActiveMembership, loading: subscriptionLoading } = useSubsscription();

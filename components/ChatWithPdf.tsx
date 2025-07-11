@@ -29,12 +29,16 @@ function ChatWithPdf({ id }: { id: string }) {
   const [isPending, startTransition] = useTransition();
   const bottomOfChatRef = useRef<HTMLDivElement>(null);
 
-  // Scroll to bottom when messages change
+  // Scroll to bottom when messages change and handle user authentication
   useEffect(() => {
     bottomOfChatRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    
+    if (!user) {
+      toast.error("Please sign in to use the chat");
+    }
+  }, [messages, user]);
 
-  const [snapshot, loading, error] = useCollection(
+  const [snapshot, loading] = useCollection(
     user &&
       query(
         collection(db, "users", user?.id, "files", id, "chat"),
@@ -45,30 +49,18 @@ function ChatWithPdf({ id }: { id: string }) {
   useEffect(() => {
     if (!snapshot) return;
 
-    // console.log(
-    //   "Snapshot data:",
-    //   snapshot.docs.map((doc) => doc.data())
-    // );
-
-    const lastMessage = messages[messages.length - 1];
-    if (lastMessage?.role === "ai" && lastMessage.message === "Thinking...") {
-      return;
-    }
-
-    const newMessages = snapshot.docs.map((doc) => {
-      const { role, message, createdAt } = doc.data();
-      return {
-        id: doc.id,
-        role,
-        message,
-        createdAt: createdAt.toDate(),
-      };
-    });
+    const newMessages: Message[] = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      role: doc.data().role,
+      message: doc.data().message,
+      createdAt: doc.data().createdAt?.toDate(),
+    }));
+    
     // Only update messages if they're different to prevent unnecessary re-renders
     if (JSON.stringify(newMessages) !== JSON.stringify(messages)) {
       setMessages(newMessages);
     }
-  }, [snapshot]);
+  }, [snapshot, messages]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -197,10 +189,12 @@ function ChatWithPdf({ id }: { id: string }) {
                 msg.role === "human" ? "justify-end" : "justify-start"
               }`}
             >
-              {msg.role === "ai" && (
-                <div className="flex-shrink-0">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#00f2fe] to-[#4facfe] flex items-center justify-center">
-                    <Bot className="w-5 h-5 text-white" />
+              {msg.role === "human" && (
+                <div className="flex items-start gap-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary">
+                    <span className="text-primary-foreground text-sm">
+                      {user?.firstName?.[0] || 'U'}
+                    </span>
                   </div>
                 </div>
               )}
@@ -246,7 +240,11 @@ function ChatWithPdf({ id }: { id: string }) {
                       className="w-8 h-8 rounded-full object-cover border border-gray-200"
                     />
                   ) : (
-                    <User className="w-8 h-8 text-gray-400 bg-gray-100 rounded-full p-1 border border-gray-200" />
+                    <div className="w-8 h-8 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center">
+                      <span className="text-gray-500 text-sm">
+                        {user?.firstName?.[0] || 'U'}
+                      </span>
+                    </div>
                   )}
                 </div>
               )}
@@ -257,7 +255,9 @@ function ChatWithPdf({ id }: { id: string }) {
 
         {/* Input */}
         <div className="p-2 sticky bottom-0 border-t border-gray-200 bg-white/80 backdrop-blur-sm">
-          <form className="flex items-center gap-2" onSubmit={handleSubmit}>
+          <form
+           method="POST" 
+          className="flex items-center gap-2" onSubmit={handleSubmit}>
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}

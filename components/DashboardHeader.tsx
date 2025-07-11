@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Button } from "./ui/button";
 import Image from "next/image";
 import logo from "@/public/SaaScribelogo.png";
-import { FiUploadCloud, FiFileText, FiZap, FiPlus, FiHome } from "react-icons/fi";
+import { FiUploadCloud, FiFileText, FiZap, FiPlus } from "react-icons/fi";
 import { useState, useEffect, useTransition } from "react";
 import useSubsscription from "@/hooks/useSubsscription";
 import { createStripePortal } from "@/actions/createStripePortal";
@@ -31,7 +31,7 @@ const DashboardHeader = () => {
       }`}
     >
       <div className="flex items-center w-full justify-between">
-        <Link href="/" className="flex items-center" onClick={() => setIsMenuOpen(false)}>
+        <Link href="/" className="flex items-center">
           <Image 
             src={logo} 
             className="w-12 h-12 sm:w-16 sm:h-16" 

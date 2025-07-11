@@ -2,7 +2,7 @@
 
 import DashboardHeader from "@/components/DashboardHeader";
 import PricingSection from "@/components/PricingSection";
-import { FiCheckCircle, FiShield, FiTrendingUp, FiUsers, FiCode, FiSettings, FiFileText } from "react-icons/fi";
+import { FiCheckCircle, FiShield, FiTrendingUp, FiUsers, FiSettings, FiFileText } from "react-icons/fi";
 import {Button} from "@/components/ui/button";
 import Link from "next/link";
 

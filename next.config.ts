@@ -13,32 +13,54 @@ const ContentSecurityPolicy = `
   media-src 'self' data:;
 `;
 
+import type { Configuration } from 'webpack';
+
 const nextConfig = {
   images: {
     domains: ["img.clerk.com"],
   },
-  webpack: (config) => {
+  webpack: (config: Configuration) => {
     // This fixes the PDF worker loading issue
-    config.resolve.alias.canvas = false;
+    if (config.resolve) {
+      if (Array.isArray(config.resolve.alias)) {
+        // Handle array case
+        config.resolve.alias.push({
+          name: 'canvas',
+          alias: false
+        });
+      } else if (config.resolve.alias) {
+        // Handle object case
+        const alias = config.resolve.alias as Record<string, string | false | string[]>;
+        alias.canvas = false;
+      }
+    }
     
     // Add a rule to handle the PDF.js worker
-    config.module.rules.push({
-      test: /\.worker\.(js|mjs)$/,
-      use: { 
-        loader: 'worker-loader',
-        options: {
-          publicPath: '/_next/static/workers/',
-          filename: 'static/workers/[name].[contenthash].worker.js',
+    if (config.module?.rules) {
+      config.module.rules.push({
+        test: /\.worker\.(js|mjs)$/,
+        use: { 
+          loader: 'worker-loader',
+          options: {
+            publicPath: '/_next/static/workers/',
+            filename: 'static/workers/[name].[contenthash].worker.js',
+          },
         },
-      },
-    });
-    
-    // Handle .mjs files
-    config.module.rules.push({
-      test: /\.mjs$/,
-      include: /node_modules/,
-      type: 'javascript/auto',
-    });
+      });
+
+      // Handle PDF.js worker loading
+      config.module.rules.push({
+        test: /\.worker\.js$/,
+        use: { loader: 'worker-loader' },
+      });
+
+      // Handle .mjs files
+      config.module.rules.push({
+        test: /\.mjs$/,
+        include: /node_modules/,
+        type: 'javascript/auto',
+      });
+    }
     
     return config;
   },

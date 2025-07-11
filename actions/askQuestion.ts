@@ -2,6 +2,7 @@
 
 import { Message } from "@/components/ChatWithPdf";
 import { adminDb } from "@/firebase/firebaseAdmin";
+// import { generateChatCompletion } from "@/lib/langChain";
 import { generateLangchainCompletion } from "@/lib/langChain";
 import { auth } from "@clerk/nextjs/server";
 
@@ -27,6 +28,27 @@ export async function askQuestion(id: string, question: string) {
     (doc) => doc.data().role === "human"
   );
 
+
+  const userMessage:Message={
+    role: "human",
+    message: question,
+    createdAt: new Date(),
+  }
+
+  await chatRef.add(userMessage);
+
+  // generating the ai respone 
+  const reply = await generateLangchainCompletion(id, question);
+  // const reply = await generateChatCompletion(id, question);
+
+  const aiMessage:Message={
+    role: "ai",
+    message: reply,
+    createdAt: new Date(),
+  }
+
+  await chatRef.add(aiMessage);
+
   // 
   const userRef = await adminDb.collection("users").doc(userId).get();
 
@@ -51,23 +73,52 @@ export async function askQuestion(id: string, question: string) {
 
 
 
-  //   limiting the pro of free users
-  const userMessage: Message = {
-    role: "human",
-    message: question,
-    createdAt: new Date(),
-  };
-  await chatRef.add(userMessage);
+  // //   limiting the pro of free users
+  // const userMessage: Message = {
+  //   role: "human",
+  //   message: question,
+  //   createdAt: new Date(),
+  // };
+  // await chatRef.add(userMessage);
 
-  // generate the ai response for the question
-  const reply = await generateLangchainCompletion(id, question);
+  // // generate the ai response for the question
+  // let reply = "";
+  // try {
+  //   const response = await fetch('https://api.openai.com/v1/chat/completions', {
+  //     method: 'POST',
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //       'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+  //     },
+  //     body: JSON.stringify({
+  //       model: "gpt-4",
+  //       messages: [
+  //         {
+  //           role: "system",
+  //           content: "You are a helpful assistant that answers questions based on the provided context. If you don't know the answer, say 'I don't have enough information to answer that question.'"
+  //         },
+  //         {
+  //           role: "user",
+  //           content: question
+  //         }
+  //       ],
+  //       temperature: 0.7,
+  //     })
+  //   });
 
-  const aiMessage: Message = {
-    role: "ai",
-    message: reply,
-    createdAt: new Date(),
-  };
-  await chatRef.add(aiMessage);
+  //   const data = await response.json();
+  //   reply = data.choices[0]?.message?.content || "I'm sorry, I couldn't generate a response.";
+  // } catch (error) {
+  //   console.error("Error generating response:", error);
+  //   reply = "Whoops, something went wrong while generating a response. Please try again.";
+  // }
+
+  // const aiMessage: Message = {
+  //   role: "ai",
+  //   message: reply,
+  //   createdAt: new Date(),
+  // };
+  // await chatRef.add(aiMessage);
 
   return { success: true, message: reply };
 }
