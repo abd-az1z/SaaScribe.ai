@@ -30,14 +30,16 @@ Experience SaaScribe.ai in action: [https://saascribe.vercel.app](https://saascr
 ## 💰 Pricing & Plans
 
 ### 🔍 Free Plan
-- 📁 3 PDF uploads per month
-- 💬 Basic AI chat with 3 Questions/Pdf
+- 📁 10 PDF uploads per month
+- 💬 Basic AI chat
+- 📊 Basic analytics
+- 🔐 Secure document storage
 - 📱 Mobile-responsive UI
 
 ### 🌟 Premium Plan (Beta Available)
 - 📁 100 PDF uploads per month
-- 💬 Advanced AI chat
-- 📊 Detailed analytics
+- 💬 Advanced AI chat with deeper context
+- 📊 Detailed analytics and insights
 - 📈 Document version history
 - 🔐 Enterprise-grade security
 - 🏃‍♂️ Priority support
@@ -139,44 +141,109 @@ saascribe.ai/
    # or
    yarn install
 
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_key
-CLERK_SECRET_KEY=your_secret
-NEXT_PUBLIC_FIREBASE_API_KEY=your_key
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_id
-OPENAI_API_KEY=your_key
-STRIPE_SECRET_KEY=your_key
-PINECONE_API_KEY=your_key
-PINECONE_ENVIRONMENT=your_env
+3. **Set up environment variables**
+   Create a `.env.local` file in the root directory and add the following variables:
+   ```env
+   # Clerk Authentication
+   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_key
+   CLERK_SECRET_KEY=your_key
+   
+   # Firebase
+   NEXT_PUBLIC_FIREBASE_API_KEY=your_key
+   NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+   NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+   NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_bucket.appspot.com
+   NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+   NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
+   
+   # OpenAI
+   OPENAI_API_KEY=your_key
+   
+   # Pinecone
+   PINECONE_API_KEY=your_key
+   PINECONE_ENVIRONMENT=your_env
+   PINECONE_INDEX=your_index_name
+   
+   # Stripe
+   STRIPE_SECRET_KEY=your_key
+   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_key
+   STRIPE_WEBHOOK_SECRET=your_webhook_secret
+   
+   # App URL (for development)
+   NEXT_PUBLIC_APP_URL=http://localhost:3000
 
-npm run dev
+4. **Run the development server**
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   ```
 
-✅ Features in Progress
-	•	✅ PDF Upload with Firebase
-	•	✅ Full chat integration (OpenAI + LangChain)
-	•	✅ Embedding & vector search (Pinecone)
-	•	✅ Secure routing with Clerk
-	•	✅ Stripe billing workflow
-	•	✅ Document sharing with access control
-	•	🔄 UI refinement, loading states, and mobile responsiveness
+   Open [http://localhost:3000](http://localhost:3000) in your browser to see the application.
 
-### Premium Features (Coming Soon)
-	•	📈 Document version history
-	•	🔍 Advanced search capabilities
-	•	📊 Detailed analytics dashboard
-	•	🎨 Document editing tools
-	•	📝 Document signing
-	•	👥 Team collaboration tools
+### Deployment
 
-⸻
+#### Vercel (Recommended)
 
-📌 TODOs
-	•	Add user-based document history
-	•	Enable document renaming/editing
-	•	Support for additional file types (e.g., DOCX)
-	•	Integrate AI summaries
-	•	Add usage analytics dashboard
-	•	User roles and team collaboration support
-👨‍💻 Author
+1. Push your code to a GitHub repository
+2. Import the repository to Vercel
+3. Add all required environment variables in the Vercel project settings
+4. Deploy!
 
-Built with ❤️ by Abdulaziz
-Connect on LinkedIn
+#### Self-hosted
+
+1. Build the application:
+   ```bash
+   npm run build
+   ```
+2. Start the production server:
+   ```bash
+   npm start
+   ```
+
+## 🛠 Built With
+
+- [Next.js 14](https://nextjs.org/) - React Framework
+- [TypeScript](https://www.typescriptlang.org/) - Type Safety
+- [Tailwind CSS](https://tailwindcss.com/) - Styling
+- [ShadCN UI](https://ui.shadcn.com/) - UI Components
+- [Firebase](https://firebase.google.com/) - Database & Storage
+- [OpenAI](https://openai.com/) - AI Models
+- [LangChain](https://www.langchain.com/) - AI Orchestration
+- [Pinecone](https://www.pinecone.io/) - Vector Database
+- [Stripe](https://stripe.com/) - Payments
+- [Clerk](https://clerk.com/) - Authentication
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 👥 Contributing
+
+We welcome contributions from the community! Whether you're fixing bugs, improving documentation, or suggesting new features, your input is valuable. Please read our [Contributing Guide](CONTRIBUTING.md) to get started.
+
+### How to Contribute:
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 🙏 Acknowledgments
+
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Tailwind CSS Documentation](https://tailwindcss.com/docs)
+- [ShadCN UI Documentation](https://ui.shadcn.com/docs)
+
+## 🙌 Final Notes
+
+SaaScribe.ai is now production-ready and ready to transform how you interact with your documents. Built with scalability and user experience in mind, this platform is ideal for individuals and teams seeking faster, smarter document insights.
+
+## 📧 Contact
+
+Abdulaziz - [@abd_az1z](https://twitter.com/abd_az1z) - contact@abdulaziz.dev  
+Project Link: [https://github.com/abd-az1z/saascribe.ai](https://github.com/abd-az1z/saascribe.ai)
+
+---
+
+✨ **Ready to get started?** [Try it now](https://saascribe.vercel.app) or [star the repository](https://github.com/abd-az1z/saascribe.ai) to show your support!
