@@ -241,7 +241,7 @@ SaaScribe.ai is now production-ready and ready to transform how you interact wit
 
 ## 📧 Contact
 
-Abdulaziz - [@abd_az1z](https://twitter.com/abd_az1z) - contact@abdulaziz.dev  
+Abdulaziz - [@abd_az1z](https://twitter.com/abd_az1z) - [contact@aziz.com](mohdadulaziz2023@gmail.com)
 Project Link: [https://github.com/abd-az1z/saascribe.ai](https://github.com/abd-az1z/saascribe.ai)
 
 ---
