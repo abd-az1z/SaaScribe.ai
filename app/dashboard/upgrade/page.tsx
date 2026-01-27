@@ -10,9 +10,8 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { useUser } from "@clerk/nextjs";
-import useSubsscription from "@/hooks/useSubsscription";
+import useSubscription from "@/hooks/useSubscription";
 import { useTransition } from "react";
-import getStripe from "@/lib/stripe-js";
 import { createCheckoutSession } from "@/actions/createCheckoutSession";
 import { createStripePortal } from "@/actions/createStripePortal";
 
@@ -77,36 +76,31 @@ export default function PricingPage() {
   const [ isPending, startTransition] = useTransition()
 
   // using or pulling the custom hook for accessing users subscription status
-  const { hasActiveMembership, loading } = useSubsscription();
+  const { hasActiveMembership, loading } = useSubscription();
 
   const handleUpgrade = async () => {
     if (!user) return;
-  
+
     try {
       startTransition(async () => {
-        const stripe = await getStripe();
-        if (!stripe) {
-          console.error('Stripe failed to initialize');
-          return;
-        }
-
         if (hasActiveMembership) {
+          // Existing subscribers - open billing portal
           const portalUrl = await createStripePortal();
           if (portalUrl) {
             window.location.href = portalUrl;
             return;
           }
         }
-  
-        // Only proceed to checkout for new subscriptions
-        const sessionId = await createCheckoutSession({
+
+        // New subscribers - redirect to checkout
+        const checkoutUrl = await createCheckoutSession({
           email: user.primaryEmailAddress?.toString() || '',
           name: user.fullName || '',
         });
-  
-        const { error } = await stripe.redirectToCheckout({ sessionId });
-        if (error) {
-          console.error('Error redirecting to checkout:', error);
+
+        if (checkoutUrl) {
+          // Direct redirect to Stripe checkout (redirectToCheckout is deprecated)
+          window.location.href = checkoutUrl;
         }
       });
     } catch (error) {

@@ -6,12 +6,69 @@ import { useCollection } from "react-firebase-hooks/firestore";
 import { useUser } from "@clerk/nextjs";
 import { collection, orderBy, query } from "firebase/firestore";
 import { db } from "@/firebase/firebase";
-import { Loader } from "lucide-react";
+import { Loader, Send } from "lucide-react";
 import { askQuestion } from "@/actions/askQuestion";
 import { format } from "date-fns";
 import { Bot } from "lucide-react";
 import Image from "next/image";
 import { toast } from "sonner";
+import { useSubscription } from "@/hooks/useSubscription";
+
+// Helper function to format AI response with basic markdown-like styling
+function formatMessage(text: string) {
+  if (!text) return null;
+
+  // Split by double newlines for paragraphs
+  const paragraphs = text.split(/\n\n+/);
+
+  return paragraphs.map((paragraph, pIndex) => {
+    // Check if it's a code block
+    if (paragraph.startsWith('```')) {
+      const codeContent = paragraph.replace(/```\w*\n?/, '').replace(/```$/, '');
+      return (
+        <pre key={pIndex} className="bg-gray-100 rounded-md p-2 my-2 overflow-x-auto text-xs font-mono">
+          <code>{codeContent}</code>
+        </pre>
+      );
+    }
+
+    // Check if it's a list
+    const lines = paragraph.split('\n');
+    const isNumberedList = lines.every(line => /^\d+\.\s/.test(line.trim()) || line.trim() === '');
+    const isBulletList = lines.every(line => /^[-•*]\s/.test(line.trim()) || line.trim() === '');
+
+    if (isNumberedList || isBulletList) {
+      return (
+        <ul key={pIndex} className={`my-2 ml-4 ${isNumberedList ? 'list-decimal' : 'list-disc'}`}>
+          {lines.filter(line => line.trim()).map((line, lIndex) => (
+            <li key={lIndex} className="mb-1">
+              {line.replace(/^(\d+\.\s|[-•*]\s)/, '')}
+            </li>
+          ))}
+        </ul>
+      );
+    }
+
+    // Regular paragraph - handle inline formatting and single line breaks
+    const formattedLines = paragraph.split('\n').map((line, lIndex) => {
+      // Bold text **text**
+      let formatted = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      // Italic text *text*
+      formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+      // Inline code `code`
+      formatted = formatted.replace(/`(.*?)`/g, '<code class="bg-gray-100 px-1 rounded text-xs">$1</code>');
+
+      return (
+        <span key={lIndex}>
+          <span dangerouslySetInnerHTML={{ __html: formatted }} />
+          {lIndex < paragraph.split('\n').length - 1 && <br />}
+        </span>
+      );
+    });
+
+    return <p key={pIndex} className="mb-2 last:mb-0">{formattedLines}</p>;
+  });
+}
 
 // message
 export type Message = {
@@ -23,9 +80,10 @@ export type Message = {
 
 function ChatWithPdf({ id }: { id: string }) {
   const { user } = useUser();
+  const { hasActiveMembership, loading: subscriptionLoading } = useSubscription();
 
   const [input, setInput] = useState("");
-  const [messages, setMessages] = useState<Message[]>([]); // Fix: should be array
+  const [messages, setMessages] = useState<Message[]>([]);
   const [isPending, startTransition] = useTransition();
   const bottomOfChatRef = useRef<HTMLDivElement>(null);
 
@@ -68,21 +126,25 @@ function ChatWithPdf({ id }: { id: string }) {
     const q = input.trim();
     if (!q) return;
 
+    // Wait for subscription to load before checking limits
+    if (subscriptionLoading) {
+      toast.info("Loading subscription status...");
+      return;
+    }
+
     // Check if we should show the limit message
     const userMessages = messages.filter(msg => msg.role === 'human');
     const freeLimit = 3;
     const proLimit = 100;
-    
-    // Check if user has active membership (you'll need to get this from your auth context)
-    const hasActiveMembership = user?.publicMetadata?.hasActiveMembership || false;
-    
+
+    console.log("[ChatWithPdf] hasActiveMembership:", hasActiveMembership, "userMessages:", userMessages.length);
+
     if (!hasActiveMembership && userMessages.length >= freeLimit) {
       toast.error(`You've reached the free plan limit of ${freeLimit} questions.`, {
         action: {
           label: 'Upgrade',
           onClick: () => {
-            // Add your upgrade navigation logic here
-            console.log('Navigate to upgrade page');
+            window.location.href = '/dashboard/upgrade';
           },
         },
       });
@@ -189,12 +251,17 @@ function ChatWithPdf({ id }: { id: string }) {
                 msg.role === "human" ? "justify-end" : "justify-start"
               }`}
             >
-              {msg.role === "human" && (
-                <div className="flex items-start gap-2">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary">
-                    <span className="text-primary-foreground text-sm">
-                      {user?.firstName?.[0] || 'U'}
-                    </span>
+              {/* AI Avatar - shown on the left for AI messages */}
+              {msg.role === "ai" && (
+                <div className="flex-shrink-0">
+                  <div className={`w-8 h-8 rounded-full bg-gradient-to-br from-[#00f2fe] to-[#4facfe] flex items-center justify-center ${
+                    msg.message === "Thinking..." ? "animate-pulse" : ""
+                  }`}>
+                    {msg.message === "Thinking..." ? (
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <Bot className="w-5 h-5 text-white" />
+                    )}
                   </div>
                 </div>
               )}
@@ -207,9 +274,15 @@ function ChatWithPdf({ id }: { id: string }) {
               >
                 {msg.role === "ai" && msg.message === "Thinking..." ? (
                   <div className="flex items-center space-x-2">
-                    <div className="w-4 h-4 border-2 border-t-2 border-t-[#00f2fe] border-gray-200 rounded-full animate-spin"></div>
-                    <span>Thinking...</span>
+                    <span className="text-gray-500">Thinking</span>
+                    <span className="flex space-x-1">
+                      <span className="w-1.5 h-1.5 bg-[#4facfe] rounded-full animate-bounce" style={{ animationDelay: "0ms" }}></span>
+                      <span className="w-1.5 h-1.5 bg-[#4facfe] rounded-full animate-bounce" style={{ animationDelay: "150ms" }}></span>
+                      <span className="w-1.5 h-1.5 bg-[#4facfe] rounded-full animate-bounce" style={{ animationDelay: "300ms" }}></span>
+                    </span>
                   </div>
+                ) : msg.role === "ai" ? (
+                  <div className="prose prose-sm max-w-none">{formatMessage(msg.message)}</div>
                 ) : (
                   <div>{msg.message}</div>
                 )}
@@ -229,12 +302,13 @@ function ChatWithPdf({ id }: { id: string }) {
                     )}
                 </div>
               </div>
+              {/* User Avatar - shown on the right for human messages */}
               {msg.role === "human" && (
                 <div className="flex-shrink-0">
                   {user?.imageUrl ? (
                     <Image
                       src={user.imageUrl}
-                      width={32} 
+                      width={32}
                       height={32}
                       alt="User Avatar"
                       className="w-8 h-8 rounded-full object-cover border border-gray-200"
@@ -270,17 +344,20 @@ function ChatWithPdf({ id }: { id: string }) {
             <Button
               type="submit"
               disabled={!input || isPending}
-              className={`bg-gradient-to-r from-[#00f2fe] to-[#4facfe] text-white px-3 sm:px-4 py-2 text-sm rounded-lg ${
-                isPending ? 'opacity-70 cursor-not-allowed' : ''
+              className={`bg-gradient-to-r from-[#00f2fe] to-[#4facfe] text-white px-3 sm:px-4 py-2 text-sm rounded-lg transition-all duration-200 ${
+                isPending ? 'opacity-70 cursor-not-allowed' : 'hover:shadow-md hover:scale-105'
               }`}
             >
               {isPending ? (
-                <div className="flex items-center">
-                  <Loader className="w-4 h-4 mr-2 animate-spin" />
-                  Sending...
+                <div className="flex items-center gap-2">
+                  <Loader className="w-4 h-4 animate-spin" />
+                  <span className="hidden sm:inline">Sending...</span>
                 </div>
               ) : (
-                'Send'
+                <div className="flex items-center gap-2">
+                  <Send className="w-4 h-4" />
+                  <span className="hidden sm:inline">Send</span>
+                </div>
               )}
             </Button>
           </form>

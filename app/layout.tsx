@@ -24,8 +24,8 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en">
-       <body className={`${nunito.variable} font-sans antialiased  flex-col bg-gradient-to-br from-white via-[#f0f9ff] to-[#e0f2fe] text-foreground`}>
-          <Toaster/>
+        <body className={`${nunito.variable} font-sans antialiased flex-col bg-gradient-to-br from-white via-[#f0f9ff] to-[#e0f2fe] text-foreground`}>
+          <Toaster position="top-center" />
           {children}
         </body>
       </html>

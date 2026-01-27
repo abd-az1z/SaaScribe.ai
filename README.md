@@ -241,9 +241,17 @@ SaaScribe.ai is now production-ready and ready to transform how you interact wit
 
 ## 📧 Contact
 
+<<<<<<< Updated upstream
 Abdulaziz - [@abd_az1z](https://twitter.com/abd_az1z) - [mohdadulaziz2023@gmail.com](mailto:mohdadulaziz2023@gmail.com)
+=======
+Abdulaziz - [@abd_az1z](https://twitter.com/abd_az1z) - contact@abdulaziz.dev  
+>>>>>>> Stashed changes
 Project Link: [https://github.com/abd-az1z/saascribe.ai](https://github.com/abd-az1z/saascribe.ai)
 
 ---
 
+<<<<<<< Updated upstream
 ✨ **Ready to get started?** [Try it now](https://saascribe.vercel.app) or [star the repository](https://github.com/abd-az1z/saascribe.ai) to show your support!
+=======
+✨ **Ready to get started?** [Try it now](https://saascribe.vercel.app) or [star the repository](https://github.com/abd-az1z/saascribe.ai) to show your support!
+>>>>>>> Stashed changes

@@ -16,9 +16,8 @@ import {
   FiZoomOut,
 } from "react-icons/fi";
 
-// Set up the correct worker source
-
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+// Set up the correct worker source using CDN (more reliable for Next.js)
+pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.mjs`;
 
 interface PdfViewProps {
   url: string;
@@ -46,7 +45,7 @@ function PdfView({ url, fileData }: PdfViewProps) {
   return (
     <div className="flex flex-col w-full h-full bg-white/95 backdrop-blur-sm border-r border-white/20 shadow-lg overflow-hidden">
       {/* Toolbar */}
-      <div className="flex items-center justify-evenly gap-2 bg-white/95 p-1.5 sm:p-2 border-b border-gray-200/50 ">
+      <div className="flex items-center justify-evenly gap-2 bg-white/95 p-1.5 sm:p-2 ">
         <div className="flex items-center space-x-2 max-w-[60%] sm:max-w-[70%]">
           <h3 className="font-semibold text-gray-800 truncate text-sm sm:text-base">
             {fileData.name}
@@ -122,7 +121,7 @@ function PdfView({ url, fileData }: PdfViewProps) {
       </div>
 
       {/* PDF Display */}
-      <div className="w-full flex items-center justify-center max-h-[calc(100vh-200px)] sm:max-h-[calc(100vh-220px)] bg-gradient-to-br from-white via-[#f8fafc] to-[#e0f2fe] border border-gray-200/50 rounded-lg shadow-inner overflow-hidden">
+      <div className="w-full flex items-center justify-center max-h-[calc(100vh-200px)] sm:max-h-[calc(100vh-220px)] bg-gradient-to-br from-white via-[#f8fafc] to-[#e0f2fe] rounded-lg overflow-hidden">
         <div className="w-full h-full  overflow-auto p-2 custom-scrollbar ">
           {file && (
             <Document

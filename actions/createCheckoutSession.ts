@@ -73,11 +73,12 @@ export async function createCheckoutSession(userDetails: { email: string; name: 
             },
         });
 
-        if (!session || !session.id) {
+        if (!session || !session.url) {
             throw new Error('Failed to create checkout session');
         }
 
-        return session.id;
+        // Return the URL for direct redirect (redirectToCheckout is deprecated)
+        return session.url;
     } catch (error) {
         console.error('Error in createCheckoutSession:', error);
         throw new Error(error instanceof Error ? error.message : 'Failed to create checkout session');

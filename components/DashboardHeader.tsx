@@ -7,12 +7,12 @@ import Image from "next/image";
 import logo from "@/public/SaaScribelogo.png";
 import { FiUploadCloud, FiFileText, FiZap, FiPlus } from "react-icons/fi";
 import { useState, useEffect, useTransition } from "react";
-import useSubsscription from "@/hooks/useSubsscription";
+import { useSubscription } from "@/hooks/useSubscription";
 import { createStripePortal } from "@/actions/createStripePortal";
 
 const DashboardHeader = () => {
   const [isScrolled, setIsScrolled] = useState(false);
-  const { hasActiveMembership } = useSubsscription();
+  const { isPro: hasActiveMembership } = useSubscription();
   const [isPending, startTransition] = useTransition();
 
   // Handle scroll for header

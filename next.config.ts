@@ -1,4 +1,4 @@
-// next.config.ts
+// In next.config.ts
 const ContentSecurityPolicy = `
   default-src 'self';
   script-src 'self' 'unsafe-inline' 'unsafe-eval' js.stripe.com *.accounts.dev *.clerk.accounts.dev unpkg.com cdnjs.cloudflare.com;
@@ -6,7 +6,7 @@ const ContentSecurityPolicy = `
   style-src 'self' 'unsafe-inline' fonts.googleapis.com;
   font-src 'self' data: fonts.gstatic.com fonts.googleapis.com;
   img-src 'self' data: https:;
-  connect-src 'self' api.stripe.com *.clerk.accounts.dev *.firebaseio.com firestore.googleapis.com *.googleapis.com cdnjs.cloudflare.com unpkg.com;
+  connect-src 'self' api.stripe.com *.clerk.accounts.dev *.firebaseio.com firestore.googleapis.com *.googleapis.com cdnjs.cloudflare.com unpkg.com clerk-telemetry.com;
   frame-src 'self' js.stripe.com *.clerk.accounts.dev;
   worker-src 'self' blob: cdnjs.cloudflare.com unpkg.com *.cloudflare.com;
   child-src 'self' blob:;
@@ -16,8 +16,15 @@ const ContentSecurityPolicy = `
 import type { Configuration } from 'webpack';
 
 const nextConfig = {
+  // Turbopack is default in Next.js 16, empty config acknowledges webpack fallback
+  turbopack: {},
   images: {
-    domains: ["img.clerk.com"],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'img.clerk.com',
+      },
+    ],
   },
   webpack: (config: Configuration) => {
     // This fixes the PDF worker loading issue
@@ -63,9 +70,6 @@ const nextConfig = {
     }
     
     return config;
-  },
-  experimental: {
-    esmExternals: "loose",
   },
   async headers() {
     return [

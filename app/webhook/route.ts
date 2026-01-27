@@ -75,11 +75,23 @@ console.log("Stripe-Signature:", headersList.get("stripe-signature"));
         return NextResponse.json({ error: "User not found" }, { status: 400 });
       }
 
+      // Update main user document (for backwards compatibility)
       await adminDb.collection("users").doc(userDetails.id).update({
         hasActiveMembership: isActive,
         subscriptionStatus: subscription.status,
         subscriptionId: subscription.id
       });
+
+      // Update subscription/details document (new structure)
+      await adminDb.collection("users").doc(userDetails.id)
+        .collection("subscription").doc("details").set({
+          status: subscription.status,
+          plan: isActive ? "pro" : "free",
+          monthlyLimit: isActive ? 30 : 3,
+          updatedAt: new Date()
+        }, { merge: true });
+
+      console.log(`Updated subscription for user ${userDetails.id}: plan=${isActive ? 'pro' : 'free'}`);
       break;
     }
     
@@ -127,9 +139,19 @@ console.log("Stripe-Signature:", headersList.get("stripe-signature"));
       }
 
       try {
-        // Update user document
+        // Update user document (for backwards compatibility)
         await adminDb.collection("users").doc(userDetails.id).update(updateData);
-        console.log('Successfully updated user subscription');
+
+        // Update subscription/details document (new structure)
+        await adminDb.collection("users").doc(userDetails.id)
+          .collection("subscription").doc("details").set({
+            status: "active",
+            plan: "pro",
+            monthlyLimit: 30,
+            updatedAt: new Date()
+          }, { merge: true });
+
+        console.log('Successfully updated user subscription to pro');
       } catch (error) {
         console.error('Error updating user document:', error);
         return NextResponse.json(
@@ -140,8 +162,7 @@ console.log("Stripe-Signature:", headersList.get("stripe-signature"));
       break;
     }
 
-    case "customer.subscription.deleted":
-    case "customer.subscription.updated": {
+    case "customer.subscription.deleted": {
       const subscription = event.data.object as Stripe.Subscription;
       const customerId = subscription.customer as string;
 
@@ -151,10 +172,22 @@ console.log("Stripe-Signature:", headersList.get("stripe-signature"));
         return NextResponse.json({ error: "User not found" }, { status: 400 });
       }
 
+      // Update main user document (for backwards compatibility)
       await adminDb.collection("users").doc(userDetails.id).update({
         hasActiveMembership: false,
         subscriptionStatus: 'canceled'
       });
+
+      // Update subscription/details document (new structure)
+      await adminDb.collection("users").doc(userDetails.id)
+        .collection("subscription").doc("details").set({
+          status: "canceled",
+          plan: "free",
+          monthlyLimit: 3,
+          updatedAt: new Date()
+        }, { merge: true });
+
+      console.log(`Subscription canceled for user ${userDetails.id}`);
       break;
     }
 

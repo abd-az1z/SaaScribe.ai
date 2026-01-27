@@ -5,11 +5,11 @@ import { createStripePortal } from "@/actions/createStripePortal";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
-import useSubsscription from "@/hooks/useSubsscription";
+import useSubscription from "@/hooks/useSubscription";
 
 export default function PricingSection() {
   const { isLoaded: isUserLoaded } = useUser();
-  const { hasActiveMembership, loading: subscriptionLoading } = useSubsscription();
+  const { hasActiveMembership, loading: subscriptionLoading } = useSubscription();
   const isLoading = !isUserLoaded || subscriptionLoading;
   if (isLoading) {
     return (
