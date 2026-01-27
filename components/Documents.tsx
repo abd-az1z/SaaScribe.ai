@@ -34,10 +34,10 @@ interface DocumentsProps {
   storageLimit: number;
 }
 
-export default function Documents({ 
-  initialDocuments = [], 
-  hasActiveMembership, 
-  isOverFileLimit, 
+export default function Documents({
+  initialDocuments = [],
+  hasActiveMembership,
+  isOverFileLimit,
   userId,
   maxDocuments,
   usedSpace,
@@ -46,10 +46,10 @@ export default function Documents({
   const [documents, setDocuments] = useState<Document[]>(initialDocuments);
   const [loading, setLoading] = useState(!initialDocuments.length);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  
-  const spacePercentage = useMemo(() => 
+
+  const spacePercentage = useMemo(() =>
     Math.min(100, (usedSpace / storageLimit) * 100)
-  , [usedSpace, storageLimit]);
+    , [usedSpace, storageLimit]);
 
   // Type guard for Firestore Timestamp
   interface FirestoreTimestamp {
@@ -60,26 +60,26 @@ export default function Documents({
   // Helper function to safely convert Firestore timestamp to Date
   const toDate = (dateInput: unknown): Date | null => {
     if (!dateInput) return null;
-    
+
     try {
       if (dateInput instanceof Date) {
         return dateInput;
       } else if (typeof dateInput === 'string') {
         const date = new Date(dateInput);
         return isNaN(date.getTime()) ? null : date;
-      } else if (dateInput && 
-                typeof dateInput === 'object' && 
-                'toDate' in dateInput && 
-                typeof (dateInput as FirestoreTimestamp).toDate === 'function') {
+      } else if (dateInput &&
+        typeof dateInput === 'object' &&
+        'toDate' in dateInput &&
+        typeof (dateInput as FirestoreTimestamp).toDate === 'function') {
         return (dateInput as FirestoreTimestamp).toDate();
       }
     } catch (error) {
       console.error('Error converting to date:', error);
     }
-    
+
     return null;
   };
-  
+
 
 
   const handleDeleteDocument = useCallback(async (docId: string, e: React.MouseEvent) => {
@@ -90,10 +90,10 @@ export default function Documents({
       setDeletingId(docId);
       // Optimistic UI update
       setDocuments(prev => prev.filter(doc => doc.id !== docId));
-      
+
       const { deleteDoc, doc } = await import('firebase/firestore');
       const { db } = await import('@/firebase/firebase');
-      
+
       await deleteDoc(doc(db, `users/${userId}/files/${docId}`));
       toast.success('Document deleted successfully');
     } catch (error) {
@@ -118,10 +118,9 @@ export default function Documents({
     const setupRealtimeUpdates = async () => {
       const { collection, query, orderBy, onSnapshot, where } = await import('firebase/firestore');
       const { db } = await import('@/firebase/firebase');
-      
+
       const q = query(
         collection(db, `users/${userId}/files`),
-        where('userId', '==', userId),
         orderBy('createdAt', 'desc')
       );
 
@@ -180,12 +179,12 @@ export default function Documents({
                 {documents.length} <span className="text-base font-normal text-gray-500">/ {maxDocuments}</span>
               </h3>
               <div className="mt-2">
-                <Progress 
-                  value={(documents.length / maxDocuments) * 100} 
+                <Progress
+                  value={(documents.length / maxDocuments) * 100}
                   className="h-2 bg-gray-100"
                   indicatorClassName={cn(
-                    documents.length >= maxDocuments 
-                      ? 'bg-red-500' 
+                    documents.length >= maxDocuments
+                      ? 'bg-red-500'
                       : 'bg-gradient-to-r from-blue-400 to-blue-600'
                   )}
                 />
@@ -196,8 +195,8 @@ export default function Documents({
             </div>
           </div>
           <p className="mt-3 text-sm text-gray-600">
-            {documents.length >= maxDocuments 
-              ? 'You\'ve reached your document limit' 
+            {documents.length >= maxDocuments
+              ? 'You\'ve reached your document limit'
               : `${maxDocuments - documents.length} documents remaining`}
           </p>
         </div>
@@ -210,12 +209,12 @@ export default function Documents({
                 {(usedSpace / (1024 * 1024)).toFixed(2)} MB
               </h3>
               <div className="mt-2">
-                <Progress 
-                  value={spacePercentage} 
+                <Progress
+                  value={spacePercentage}
                   className="h-2 bg-gray-100"
                   indicatorClassName={cn(
-                    spacePercentage >= 90 
-                      ? 'bg-yellow-500' 
+                    spacePercentage >= 90
+                      ? 'bg-yellow-500'
                       : 'bg-gradient-to-r from-green-400 to-green-600'
                   )}
                 />
@@ -234,59 +233,58 @@ export default function Documents({
       </div>
 
       <div className="mt-8">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        {/* Left Side - Heading & Info */}
-        <div className="flex-1">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Your Documents</h1>
-          <div className="flex flex-col sm:flex-row sm:items-center mt-2 gap-2 sm:gap-3">
-            <p className="text-gray-600 text-sm sm:text-base">
-              {documents.length} {documents.length === 1 ? 'document' : 'documents'} • {formatFileSize(usedSpace)} used
-            </p>
-            {hasActiveMembership ? (
-              <span className="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-green-100 text-green-800 rounded-full">
-                <CheckCircle2 className="w-3 h-3 mr-1" /> Active
-              </span>
-            ) : (
-              <span className="inline-block px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-800 rounded-full">
-                Free Tier
-              </span>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          {/* Left Side - Heading & Info */}
+          <div className="flex-1">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Your Documents</h1>
+            <div className="flex flex-col sm:flex-row sm:items-center mt-2 gap-2 sm:gap-3">
+              <p className="text-gray-600 text-sm sm:text-base">
+                {documents.length} {documents.length === 1 ? 'document' : 'documents'} • {formatFileSize(usedSpace)} used
+              </p>
+              {hasActiveMembership ? (
+                <span className="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-green-100 text-green-800 rounded-full">
+                  <CheckCircle2 className="w-3 h-3 mr-1" /> Active
+                </span>
+              ) : (
+                <span className="inline-block px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-800 rounded-full">
+                  Free Tier
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Right Side - Actions */}
+          <div className="flex flex-col sm:items-end gap-2 sm:gap-3">
+            <Link
+              href="/dashboard/upload"
+              className={`inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md shadow-sm text-white ${isOverFileLimit
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                }`}
+              onClick={(e) => {
+                if (isOverFileLimit) {
+                  e.preventDefault();
+                  toast.error(
+                    `You've reached your document limit of ${maxDocuments} documents. Please upgrade to Pro for more.`
+                  );
+                }
+              }}
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Upload Document
+            </Link>
+
+            {!hasActiveMembership && (
+              <p className="text-xs text-gray-500 text-center sm:text-right">
+                Free tier limited to {maxDocuments} documents.{" "}
+                <Link href="/pricing" className="font-medium text-blue-600 hover:text-blue-500">
+                  Upgrade to Pro
+                </Link>{" "}
+                for unlimited documents.
+              </p>
             )}
           </div>
         </div>
-
-        {/* Right Side - Actions */}
-        <div className="flex flex-col sm:items-end gap-2 sm:gap-3">
-          <Link
-            href="/dashboard/upload"
-            className={`inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md shadow-sm text-white ${
-              isOverFileLimit
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            }`}
-            onClick={(e) => {
-              if (isOverFileLimit) {
-                e.preventDefault();
-                toast.error(
-                  `You've reached your document limit of ${maxDocuments} documents. Please upgrade to Pro for more.`
-                );
-              }
-            }}
-          >
-            <Download className="mr-2 h-4 w-4" />
-            Upload Document
-          </Link>
-
-          {!hasActiveMembership && (
-            <p className="text-xs text-gray-500 text-center sm:text-right">
-              Free tier limited to {maxDocuments} documents.{" "}
-              <Link href="/pricing" className="font-medium text-blue-600 hover:text-blue-500">
-                Upgrade to Pro
-              </Link>{" "}
-              for unlimited documents.
-            </p>
-          )}
-        </div>
-      </div>
 
         {documents.length === 0 ? (
           <div className="text-center py-12">
@@ -298,11 +296,10 @@ export default function Documents({
             <div className="mt-6">
               <Link
                 href="/dashboard/upload"
-                className={`inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white ${
-                  isOverFileLimit
+                className={`inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white ${isOverFileLimit
                     ? "bg-gray-400 cursor-not-allowed"
                     : "bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                }`}
+                  }`}
                 onClick={(e) => {
                   if (isOverFileLimit) {
                     e.preventDefault();
@@ -365,11 +362,10 @@ export default function Documents({
                         <button
                           onClick={(e) => handleDeleteDocument(document.id, e)}
                           disabled={deletingId === document.id}
-                          className={`p-1.5 rounded-full ${
-                            hasActiveMembership
+                          className={`p-1.5 rounded-full ${hasActiveMembership
                               ? 'text-gray-400 hover:text-red-600 hover:bg-red-50'
                               : 'text-gray-300 cursor-not-allowed'
-                          }`}
+                            }`}
                           title={hasActiveMembership ? 'Delete' : 'Upgrade to delete'}
                         >
                           {deletingId === document.id ? (

@@ -30,17 +30,67 @@ async function getDocuments(userId: string) {
   }
 }
 
-async function getUserSubscription() {
-  const isPro = true; 
-  
-  return {
-    hasActiveMembership: isPro,
-    isOverFileLimit: false,
-    maxDocuments: isPro ? 30 : 3,
-    usedSpace: 0,
-    storageLimit: isPro ? 1024 * 1024 * 1024 : 100 * 1024 * 1024,
-    plan: isPro ? 'pro' : 'free'
-  };
+async function getUserSubscription(userId: string) {
+  try {
+    // Check subscription from Firebase - try new structure first
+    const { doc, getDoc } = await import('firebase/firestore');
+    const subscriptionRef = doc(db, 'users', userId, 'subscription', 'details');
+    const subscriptionDoc = await getDoc(subscriptionRef);
+
+    if (subscriptionDoc.exists()) {
+      const data = subscriptionDoc.data();
+      const isPro = data.plan === 'pro';
+      console.log('[getUserSubscription] Found new structure, plan:', data.plan);
+      return {
+        hasActiveMembership: isPro,
+        isOverFileLimit: false,
+        maxDocuments: isPro ? 30 : 3,
+        usedSpace: 0,
+        storageLimit: isPro ? 1024 * 1024 * 1024 : 100 * 1024 * 1024,
+        plan: data.plan || 'free'
+      };
+    }
+
+    // Fallback to old structure on main user document
+    const userRef = doc(db, 'users', userId);
+    const userDoc = await getDoc(userRef);
+
+    if (userDoc.exists()) {
+      const userData = userDoc.data();
+      const isPro = userData?.hasActiveMembership === true;
+      console.log('[getUserSubscription] Found old structure, hasActiveMembership:', userData?.hasActiveMembership);
+      return {
+        hasActiveMembership: isPro,
+        isOverFileLimit: false,
+        maxDocuments: isPro ? 30 : 3,
+        usedSpace: 0,
+        storageLimit: isPro ? 1024 * 1024 * 1024 : 100 * 1024 * 1024,
+        plan: isPro ? 'pro' : 'free'
+      };
+    }
+
+    // Default to free plan if no subscription found
+    console.log('[getUserSubscription] No subscription found, defaulting to free');
+    return {
+      hasActiveMembership: false,
+      isOverFileLimit: false,
+      maxDocuments: 3,
+      usedSpace: 0,
+      storageLimit: 100 * 1024 * 1024,
+      plan: 'free'
+    };
+  } catch (error) {
+    console.error('Error fetching subscription:', error);
+    // Default to free plan on error
+    return {
+      hasActiveMembership: false,
+      isOverFileLimit: false,
+      maxDocuments: 3,
+      usedSpace: 0,
+      storageLimit: 100 * 1024 * 1024,
+      plan: 'free'
+    };
+  }
 }
 
 export default async function Dashboard() {
@@ -57,7 +107,7 @@ export default async function Dashboard() {
 
   const [documents, subscription] = await Promise.all([
     getDocuments(userId),
-    getUserSubscription()
+    getUserSubscription(userId)
   ]);
 
   

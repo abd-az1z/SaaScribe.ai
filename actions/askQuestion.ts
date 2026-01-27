@@ -2,7 +2,6 @@
 
 import { Message } from "@/components/ChatWithPdf";
 import { adminDb } from "@/firebase/firebaseAdmin";
-// import { generateChatCompletion } from "@/lib/langChain";
 import { generateLangchainCompletion } from "@/lib/langChain";
 import { auth } from "@clerk/nextjs/server";
 
@@ -10,115 +9,97 @@ const FREE_PLAN_LIMIT = 3;
 const PRO_PLAN_LIMIT = 100;
 
 export async function askQuestion(id: string, question: string) {
+  console.log("[askQuestion] Starting with id:", id, "question:", question);
+
   const { userId } = await auth();
   if (!userId) {
+    console.error("[askQuestion] No userId found");
     throw new Error("User ID is required");
   }
+  console.log("[askQuestion] userId:", userId);
 
+  // Use "files" path to match ChatWithPdf component
   const chatRef = adminDb
     .collection("users")
     .doc(userId)
-    .collection("chats")
+    .collection("files")
     .doc(id)
     .collection("chat");
 
-  // check how many message are in chat
+  console.log("[askQuestion] Chat ref path:", `users/${userId}/files/${id}/chat`);
+
+  // Check user's subscription FIRST (before processing)
+  // Try new structure first, fall back to old structure
+  let hasActiveMembership = false;
+
+  const subscriptionRef = await adminDb
+    .collection("users")
+    .doc(userId)
+    .collection("subscription")
+    .doc("details")
+    .get();
+
+  if (subscriptionRef.exists) {
+    const subscriptionData = subscriptionRef.data();
+    hasActiveMembership = subscriptionData?.plan === "pro";
+    console.log("[askQuestion] User plan (new structure):", subscriptionData?.plan);
+  } else {
+    // Fallback to old structure on main user document
+    const userRef = await adminDb.collection("users").doc(userId).get();
+    hasActiveMembership = userRef.data()?.hasActiveMembership === true;
+    console.log("[askQuestion] User plan (old structure):", userRef.data()?.hasActiveMembership);
+  }
+
+  console.log("[askQuestion] hasActiveMembership:", hasActiveMembership);
+
+  // Check how many messages are in chat
   const chatSnapshot = await chatRef.get();
   const userMessagesCount = chatSnapshot.docs.filter(
     (doc) => doc.data().role === "human"
-  );
+  ).length;
 
+  console.log("[askQuestion] Current user messages count:", userMessagesCount);
 
-  const userMessage:Message={
-    role: "human",
-    message: question,
-    createdAt: new Date(),
-  }
-
-  await chatRef.add(userMessage);
-
-  // generating the ai respone 
-  const reply = await generateLangchainCompletion(id, question);
-  // const reply = await generateChatCompletion(id, question);
-
-  const aiMessage:Message={
-    role: "ai",
-    message: reply,
-    createdAt: new Date(),
-  }
-
-  await chatRef.add(aiMessage);
-
-  // 
-  const userRef = await adminDb.collection("users").doc(userId).get();
-
-  // Check user's plan and apply appropriate limits
-  const hasActiveMembership = userRef.data()?.hasActiveMembership;
-  
-  if (!hasActiveMembership && userMessagesCount.length >= FREE_PLAN_LIMIT) {
+  // Check limits BEFORE processing the question
+  if (!hasActiveMembership && userMessagesCount >= FREE_PLAN_LIMIT) {
+    console.log("[askQuestion] Free plan limit reached");
     return {
       success: false,
       message: `You've reached the free plan limit of ${FREE_PLAN_LIMIT} questions per document. Upgrade to PRO to ask more questions!`
     };
   }
 
-  if (hasActiveMembership && userMessagesCount.length >= PRO_PLAN_LIMIT) {
+  if (hasActiveMembership && userMessagesCount >= PRO_PLAN_LIMIT) {
+    console.log("[askQuestion] Pro plan limit reached");
     return {
       success: false,
       message: `You have reached the PRO plan limit of ${PRO_PLAN_LIMIT} questions per document!`
     };
   }
 
+  // Now add the user message
+  const userMessage: Message = {
+    role: "human",
+    message: question,
+    createdAt: new Date(),
+  };
 
+  console.log("[askQuestion] Adding user message to Firestore");
+  await chatRef.add(userMessage);
+  console.log("[askQuestion] User message added successfully");
 
+  // Generate the AI response
+  console.log("[askQuestion] Calling generateLangchainCompletion");
+  const reply = await generateLangchainCompletion(id, question);
+  console.log("[askQuestion] Got reply:", reply);
 
+  const aiMessage: Message = {
+    role: "ai",
+    message: reply,
+    createdAt: new Date(),
+  };
 
-  // //   limiting the pro of free users
-  // const userMessage: Message = {
-  //   role: "human",
-  //   message: question,
-  //   createdAt: new Date(),
-  // };
-  // await chatRef.add(userMessage);
-
-  // // generate the ai response for the question
-  // let reply = "";
-  // try {
-  //   const response = await fetch('https://api.openai.com/v1/chat/completions', {
-  //     method: 'POST',
-  //     headers: {
-  //       'Content-Type': 'application/json',
-  //       'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
-  //     },
-  //     body: JSON.stringify({
-  //       model: "gpt-4",
-  //       messages: [
-  //         {
-  //           role: "system",
-  //           content: "You are a helpful assistant that answers questions based on the provided context. If you don't know the answer, say 'I don't have enough information to answer that question.'"
-  //         },
-  //         {
-  //           role: "user",
-  //           content: question
-  //         }
-  //       ],
-  //       temperature: 0.7,
-  //     })
-  //   });
-
-  //   const data = await response.json();
-  //   reply = data.choices[0]?.message?.content || "I'm sorry, I couldn't generate a response.";
-  // } catch (error) {
-  //   console.error("Error generating response:", error);
-  //   reply = "Whoops, something went wrong while generating a response. Please try again.";
-  // }
-
-  // const aiMessage: Message = {
-  //   role: "ai",
-  //   message: reply,
-  //   createdAt: new Date(),
-  // };
-  // await chatRef.add(aiMessage);
+  await chatRef.add(aiMessage);
 
   return { success: true, message: reply };
 }

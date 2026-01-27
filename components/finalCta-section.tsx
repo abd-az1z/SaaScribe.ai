@@ -2,13 +2,13 @@ import React from 'react';
 import { Button } from './ui/button';
 import Link from 'next/link';
 import { useUser } from "@clerk/nextjs";
-import useSubsscription from "@/hooks/useSubsscription";
+import useSubscription from "@/hooks/useSubscription";
 import { CheckCircle2 } from "lucide-react";
 import { createStripePortal } from "@/actions/createStripePortal";
 
 const FinalCtaSection = () => {
   const { isLoaded: isUserLoaded } = useUser();
-  const { hasActiveMembership, loading: subscriptionLoading } = useSubsscription();
+  const { hasActiveMembership, loading: subscriptionLoading } = useSubscription();
   const isLoading = !isUserLoaded || subscriptionLoading;
 
   if (isLoading) {
