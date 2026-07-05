@@ -19,7 +19,7 @@ const getStripe = () => {
     throw new Error('STRIPE_SECRET_KEY is not defined in environment variables');
   }
   return new Stripe(stripeSecretKey, {
-    apiVersion: '2025-06-30.basil',
+    apiVersion: '2025-11-17.clover',
   });
 };
 

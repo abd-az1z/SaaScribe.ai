@@ -1,5 +1,5 @@
 import pdf from 'pdf-parse';
-import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
+import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
 import { Document } from '@langchain/core/documents';
 
 export async function parsePDF(buffer: Buffer): Promise<{ text: string; pageCount: number }> {

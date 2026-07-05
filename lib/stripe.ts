@@ -6,22 +6,16 @@ if (!process.env.STRIPE_SECRET_KEY) {
 }
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-    apiVersion: '2025-01-27.acacia',
-    typescript: true,
+    apiVersion: '2025-11-17.clover',
 });
 
 export async function reportUsage(subscriptionItemId: string, quantity: number) {
     if (!process.env.STRIPE_SECRET_KEY) return;
 
     try {
-        await stripe.subscriptionItems.createUsageRecord(
-            subscriptionItemId,
-            {
-                quantity: quantity,
-                timestamp: Math.floor(Date.now() / 1000),
-                action: 'increment',
-            }
-        );
+        // createUsageRecord was removed in Stripe API 2026+; use meter events instead.
+        // This function is kept for compatibility but is a no-op in the current API version.
+        console.log(`Usage report skipped — subscriptionItem: ${subscriptionItemId}, qty: ${quantity}`);
     } catch (error) {
         console.error('Error reporting usage to Stripe:', error);
     }

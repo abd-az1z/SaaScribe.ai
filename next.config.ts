@@ -13,10 +13,7 @@ const ContentSecurityPolicy = `
   media-src 'self' data:;
 `;
 
-import type { Configuration } from 'webpack';
-
 const nextConfig = {
-  // Turbopack is default in Next.js 16, empty config acknowledges webpack fallback
   turbopack: {},
   images: {
     remotePatterns: [
@@ -26,7 +23,8 @@ const nextConfig = {
       },
     ],
   },
-  webpack: (config: Configuration) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  webpack: (config: any) => {
     // This fixes the PDF worker loading issue
     if (config.resolve) {
       if (Array.isArray(config.resolve.alias)) {
