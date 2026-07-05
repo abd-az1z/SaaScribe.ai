@@ -24,16 +24,11 @@ function FileUploader() {
   }, [fileId, router]);
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    //
     const file = acceptedFiles[0];
     if (file) {
       await handleUpload(file);
-    } else {
-      // toast
     }
-
-    console.log(acceptedFiles);
-  }, []);
+  }, [handleUpload]);
 
   const statusIcon: Record<StatusText, JSX.Element> = {
     [StatusText.UPLOADING]: (

@@ -7,21 +7,22 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/firebase/firebase';
 import ChatWithPdf from '@/components/ChatWithPdf';
 import PdfView from '@/components/PdfView';
+import useSubscription from '@/hooks/useSubscription';
 
 interface ChatToFilePageProps {
-  params: Promise<{
-    id: string;
-  }>;
+  params: Promise<{ id: string }>;
 }
 
 export default function ChatToFilePage({ params }: ChatToFilePageProps) {
   const { id: docId } = use(params);
   const { userId } = useAuth();
   const router = useRouter();
+  const { hasActiveMembership } = useSubscription();
+
   const [url, setUrl] = useState<string>('');
-  const [fileData, setFileData] = useState<{ name: string; fileType: string }>({ 
-    name: 'Document', 
-    fileType: 'PDF' 
+  const [fileData, setFileData] = useState<{ name: string; fileType: string }>({
+    name: 'Document',
+    fileType: 'PDF',
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -36,20 +37,16 @@ export default function ChatToFilePage({ params }: ChatToFilePageProps) {
       try {
         const docRef = doc(db, 'users', userId, 'files', docId);
         const docSnap = await getDoc(docRef);
-        
-        if (!docSnap.exists()) {
-          throw new Error('Document not found');
-        }
+
+        if (!docSnap.exists()) throw new Error('Document not found');
 
         const data = docSnap.data();
-        if (!data?.downloadUrl) {
-          throw new Error('No download URL found');
-        }
+        if (!data?.downloadUrl) throw new Error('No download URL found');
 
         setUrl(data.downloadUrl);
         setFileData({
           name: data.name || 'Document',
-          fileType: data.fileType || 'PDF'
+          fileType: data.fileType || 'PDF',
         });
       } catch (err) {
         console.error('Error fetching file:', err);
@@ -65,7 +62,7 @@ export default function ChatToFilePage({ params }: ChatToFilePageProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500" />
       </div>
     );
   }
@@ -81,12 +78,18 @@ export default function ChatToFilePage({ params }: ChatToFilePageProps) {
   return (
     <div className="h-full pt-26 px-2 sm:px-0">
       <div className="flex flex-col lg:flex-row h-full bg-gradient-to-br from-white via-[#f8fafc] to-[#e0f2fe] overflow-hidden">
-        {/* PDF Viewer Section - Left */}
+        {/* PDF Viewer — Left */}
         <div className="w-full lg:w-1/2 flex flex-col bg-white/95 backdrop-blur-sm border-b lg:border-b-0 lg:border-r border-gray-200/50 shadow-sm lg:shadow-lg">
-          <PdfView url={url} fileData={fileData} />
+          <PdfView
+            url={url}
+            fileData={fileData}
+            docId={docId}
+            userId={userId ?? ''}
+            hasActiveMembership={hasActiveMembership}
+          />
         </div>
 
-        {/* Chat Section - Right */}
+        {/* Chat — Right */}
         <div className="w-full lg:w-1/2 flex flex-col bg-white/95 lg:bg-white/90 backdrop-blur-sm shadow-sm lg:shadow-lg overflow-hidden">
           <ChatWithPdf id={docId} />
         </div>

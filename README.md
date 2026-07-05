@@ -1,257 +1,259 @@
-# SaaScribe.ai 📄💬
-**Chat with Your Files. Powered by AI.**  
-_"Let Your Documents Speak."_
+<div align="center">
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Next.js](https://img.shields.io/badge/Next.js-14.0.0+-black?logo=next.js)](https://nextjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0.0+-3178C6?logo=typescript)](https://www.typescriptlang.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.3.0+-06B6D4?logo=tailwind-css)](https://tailwindcss.com/)
+# SaaScribe.ai
 
-## 🚀 Overview
+**Turn any PDF into an intelligent conversation — and every contract into a risk report.**
 
-**SaaScribe.ai** is an AI-powered SaaS platform that revolutionizes document interaction. Users can upload PDF documents and engage in intelligent, context-aware conversations about their content. Built with modern web technologies, this application combines secure file storage, advanced document parsing, and state-of-the-art conversational AI to create a seamless user experience.
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-saascribe.vercel.app-00f2fe?style=for-the-badge&logo=vercel)](https://saascribe.vercel.app)
+[![Next.js](https://img.shields.io/badge/Next.js%2016-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![OpenAI](https://img.shields.io/badge/GPT--4o-412991?style=for-the-badge&logo=openai&logoColor=white)](https://openai.com/)
 
-🔹 **Key Benefits**
-- **Instant Insights**: Get answers from your documents in seconds
-- **Secure & Private**: Your documents are stored securely with enterprise-grade encryption
-- **Easy to Use**: Intuitive interface that works across all devices
-- **Powerful AI**: Powered by OpenAI and LangChain for accurate, contextual responses
-
-## ✅ Project Status
-
-SaaScribe.ai is a **fully developed and production-ready SaaS application**. All core features including PDF processing, semantic search, AI chat integration, secure authentication, and payment processing have been implemented and thoroughly tested. The platform is actively maintained with regular updates and improvements based on user feedback.
-
-## 🔗 Live Demo
-
-Experience SaaScribe.ai in action: [https://saascribe.vercel.app](https://saascribe.vercel.app)
-
-> 💡 For a personalized demo or enterprise inquiries, please [contact us](#-contact).
-
-## 💰 Pricing & Plans
-
-### 🔍 Free Plan
-- 📁 10 PDF uploads per month
-- 💬 Basic AI chat
-- 📊 Basic analytics
-- 🔐 Secure document storage
-- 📱 Mobile-responsive UI
-
-### 🌟 Premium Plan (Beta Available)
-- 📁 100 PDF uploads per month
-- 💬 Advanced AI chat with deeper context
-- 📊 Detailed analytics and insights
-- 📈 Document version history
-- 🔐 Enterprise-grade security
-- 🏃‍♂️ Priority support
-- 🚀 Early access to new features
-
-> 💡 Premium features are fully implemented and being rolled out to beta users. [Contact us](#-contact) for early access.
-
-## ✨ Key Features
-
-- 📁 **PDF Upload & Viewer**  
-  Drag-and-drop uploader with preview and page navigation powered by `react-pdf`.
-
-- 💬 **Chat with Documents**  
-  Interact with the uploaded PDF using a chat interface powered by OpenAI and LangChain.
-
-- 🔐 **Authentication**  
-  Integrated using Clerk for secure sign-in, sign-up, and session management.
-
-- 🌐 **Real-time File Sharing**  
-  Share documents and view them collaboratively via Firebase Firestore and Storage.
-
-- 🧾 **Usage-based Billing**  
-  Stripe integration for user subscription and file limits per tier.
-
-- 🔍 **Semantic Search with Pinecone**  
-  Vector embeddings using OpenAI + LangChain with Pinecone to semantically index and search document content.
-
-- ⚡ **Modern Stack & UI**  
-  Vite + Next.js 15, Tailwind CSS, ShadCN UI, and React Icons for a clean, modern interface.
+</div>
 
 ---
 
-## 🛠 Tech Stack
+## What Is SaaScribe.ai?
 
-| Tech          | Usage                             |
-|---------------|-----------------------------------|
-| **Next.js 15**| Core React framework (App Router) |
-| **Vite**      | Fast development environment       |
-| **Clerk**     | Auth (sign in/out, session, user) |
-| **Firebase**  | Firestore DB + Storage            |
-| **LangChain** | AI document interaction pipeline  |
-| **Pinecone**  | Vector storage for embeddings     |
-| **OpenAI**    | ChatGPT document Q&A              |
-| **Stripe**    | Subscription & payments           |
-| **TailwindCSS**| Responsive design                |
-| **ShadCN UI** | Component styling                 |
+SaaScribe.ai is a production-ready AI SaaS platform that lets users upload PDF documents and have natural-language conversations with them — no copy-pasting, no ctrl+F, no reading 60-page contracts line by line. It ships two core products under one roof: a **PDF Chat assistant** that answers questions grounded in your document's actual content, and a **Contract Risk Lens** that scores legal documents for risk and surfaces specific clauses that warrant attention.
+
+The platform is fully monetized with a freemium model (Stripe subscriptions), enforces per-tier usage limits in real time, and is deployed to Vercel.
+
+**→ [Try the live demo](https://saascribe.vercel.app)**
 
 ---
 
-## 🗂 Project Structure
+## The Problem It Solves
+
+| Before SaaScribe.ai | After SaaScribe.ai |
+|---|---|
+| Read a 40-page report to find one answer | Ask a question, get the answer in seconds |
+| Spend 45 minutes reviewing a contract | Get a risk score + flagged clauses in under 2 minutes |
+| Email back and forth with your legal team | Understand obligations yourself, instantly |
+| Lose context switching between PDF and notes | Chat history persists alongside the document |
+
+---
+
+## Features
+
+### PDF Chat (RAG-powered)
+- **Drag-and-drop upload** — uploads directly to Firebase Storage; processing begins immediately
+- **AI Q&A with memory** — GPT-4o answers questions grounded in the document using a LangChain retrieval chain; prior conversation turns are included in context so follow-up questions work naturally
+- **Split-panel view** — PDF viewer (react-pdf) on the left, live chat on the right; no context switching
+- **Optimistic UI** — messages appear instantly with an animated "Thinking..." state while the AI responds
+- **Per-tier limits enforced end-to-end** — both the client and server action independently enforce free (3 questions) vs. Pro (100 questions) limits
+
+### Contract Risk Lens
+- **One-click contract upload** — paste or upload a PDF contract and receive a structured risk report
+- **Hybrid analysis** — rule-based keyword detection (indemnification, arbitration, auto-renewal, etc.) combined with GPT-4o for nuanced clause-level findings
+- **Risk score (0–100)** — a quantified score deducted by finding severity (high: −15, medium: −5, low: −2), giving a clear signal at a glance
+- **Structured findings** — each finding carries a type (`missing_clause`, `risky_clause`, `general_risk`), severity, and description, stored in NeonDB via Drizzle ORM
+
+### Platform
+- **Clerk authentication** — sign up / sign in / session management with zero boilerplate
+- **Freemium billing** — Stripe Checkout + Customer Portal; webhook handler syncs subscription state back to Firestore
+- **Subscription-aware UI** — pricing page, dashboard, and chat input all respond live to the user's plan
+- **Responsive design** — works across mobile, tablet, and desktop; chat panel adapts to viewport height
+
+---
+
+## Tech Stack
+
+| Layer | Technology | Why |
+|---|---|---|
+| **Framework** | Next.js 16 (App Router) | Server actions, streaming, file-based routing |
+| **Language** | TypeScript 5 | End-to-end type safety across client, server, and DB |
+| **Auth** | Clerk | Drop-in auth with session tokens and user management |
+| **AI / LLM** | OpenAI GPT-4o via LangChain | Best-in-class reasoning; LangChain handles the RAG chain |
+| **Vector DB** | Pinecone | Semantic search over document embeddings; namespace per document |
+| **File Storage** | Firebase Storage | Scalable PDF storage with secure download URLs |
+| **Realtime DB** | Firestore | Chat history synced in real time via `react-firebase-hooks` |
+| **SQL DB** | NeonDB (Postgres) + Drizzle ORM | Structured storage for risk assessments and documents |
+| **Payments** | Stripe | Subscriptions, Checkout, Customer Portal, webhooks |
+| **UI** | Tailwind CSS v4, Radix UI, shadcn/ui | Accessible component primitives with utility-first styling |
+| **Animation** | Framer Motion | Page transitions and micro-interactions |
+| **Deployment** | Vercel | Edge-optimized Next.js hosting with env management |
+
+---
+
+## Architecture Overview
 
 ```
-saascribe.ai/
-├── app/                  # Next.js 14 App Router pages and API routes
-│   ├── (auth)/           # Authentication related routes
-│   ├── api/              # API endpoints
-│   └── dashboard/        # Main application dashboard
-├── actions/              # Server actions for data mutations
-├── components/           # Reusable UI components
-│   ├── ui/               # ShadCN UI components
-│   └── ...               # Other feature components
-├── firebase/             # Firebase configuration and utilities
-├── hooks/                # Custom React hooks
-├── lib/                  # Core application logic
-│   ├── db/               # Database utilities
-│   ├── langchain/         # AI and document processing
-│   └── stripe/           # Payment processing
-├── public/               # Static assets
-├── test/                 # Test files
-├── .env.local            # Environment variables
-└── package.json          # Project dependencies
+User Browser
+    │
+    ├─ Clerk (Auth)
+    │
+    └─ Next.js 16 (Vercel)
+         ├─ App Router pages
+         │    ├─ /dashboard          → document list (Firestore)
+         │    ├─ /dashboard/files/[id] → PDF viewer + chat
+         │    ├─ /risk-lens          → contract analysis tool
+         │    └─ /dashboard/upgrade  → Stripe Checkout
+         │
+         ├─ Server Actions
+         │    ├─ askQuestion         → LangChain retrieval chain → GPT-4o → Firestore
+         │    ├─ generateEmbeddings  → PDF parse → chunk → OpenAI embed → Pinecone
+         │    ├─ createCheckoutSession → Stripe
+         │    └─ createStripePortal  → Stripe Customer Portal
+         │
+         └─ API Routes
+              ├─ /api/upload         → Firebase Storage
+              ├─ /api/documents      → NeonDB via Drizzle
+              └─ /webhook            → Stripe events → Firestore sync
+
+RAG Pipeline (per question):
+  PDF (Firebase Storage)
+    → pdf-parse + RecursiveCharacterTextSplitter
+    → OpenAIEmbeddings
+    → PineconeStore (namespace = docId)
+    → similarity_search(question, k=4)
+    → createRetrievalChain + ChatPromptTemplate
+    → GPT-4o
+    → Firestore (chat history)
 ```
 
 ---
 
-## 🚀 Getting Started
+## Pricing
+
+| | **Free** | **Pro — $5.99/mo** |
+|---|---|---|
+| PDFs | 3 total | 30 |
+| Questions per PDF | 3 | 100 |
+| Page limit per file | 5 pages | Unlimited |
+| Delete PDFs | — | ✓ |
+| AI Chat with Memory Recall | Basic | Full |
+| Priority support | — | ✓ |
+| Early access to new features | — | ✓ |
+
+---
+
+## Running Locally
 
 ### Prerequisites
 
-- Node.js 18.0.0 or later
-- npm or yarn
-- Firebase project with Firestore and Storage enabled
-- OpenAI API key
-- Pinecone account
-- Stripe account (for payments)
-- Clerk account (for authentication)
+- Node.js 18+
+- Accounts for: Firebase, Clerk, OpenAI, Pinecone, Stripe, NeonDB
 
-### Local Development
+### 1. Clone and install
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/abd-az1z/saascribe.ai.git
-   cd saascribe.ai
-   ```
+```bash
+git clone https://github.com/abd-az1z/saascribe.ai.git
+cd saascribe.ai
+npm install
+```
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   # or
-   yarn install
+### 2. Environment variables
 
-3. **Set up environment variables**
-   Create a `.env.local` file in the root directory and add the following variables:
-   ```env
-   # Clerk Authentication
-   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_key
-   CLERK_SECRET_KEY=your_key
-   
-   # Firebase
-   NEXT_PUBLIC_FIREBASE_API_KEY=your_key
-   NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
-   NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
-   NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_bucket.appspot.com
-   NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-   NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
-   
-   # OpenAI
-   OPENAI_API_KEY=your_key
-   
-   # Pinecone
-   PINECONE_API_KEY=your_key
-   PINECONE_ENVIRONMENT=your_env
-   PINECONE_INDEX=your_index_name
-   
-   # Stripe
-   STRIPE_SECRET_KEY=your_key
-   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_key
-   STRIPE_WEBHOOK_SECRET=your_webhook_secret
-   
-   # App URL (for development)
-   NEXT_PUBLIC_APP_URL=http://localhost:3000
+Create a `.env.local` file:
 
-4. **Run the development server**
-   ```bash
-   npm run dev
-   # or
-   yarn dev
-   ```
+```env
+# Clerk
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_...
+CLERK_SECRET_KEY=sk_...
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
 
-   Open [http://localhost:3000](http://localhost:3000) in your browser to see the application.
+# Firebase (client)
+NEXT_PUBLIC_FIREBASE_API_KEY=
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
+NEXT_PUBLIC_FIREBASE_APP_ID=
 
-### Deployment
+# Firebase Admin (server)
+FIREBASE_ADMIN_PROJECT_ID=
+FIREBASE_ADMIN_CLIENT_EMAIL=
+FIREBASE_ADMIN_PRIVATE_KEY=
 
-#### Vercel (Recommended)
+# OpenAI
+OPENAI_API_KEY=sk-...
 
-1. Push your code to a GitHub repository
-2. Import the repository to Vercel
-3. Add all required environment variables in the Vercel project settings
-4. Deploy!
+# Pinecone
+PINECONE_API_KEY=
+PINECONE_INDEX=projects-aziz
 
-#### Self-hosted
+# Stripe
+STRIPE_SECRET_KEY=sk_...
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+STRIPE_PRO_PRICE_ID=price_...
 
-1. Build the application:
-   ```bash
-   npm run build
-   ```
-2. Start the production server:
-   ```bash
-   npm start
-   ```
+# NeonDB
+DATABASE_URL=postgresql://...
+```
 
-## 🛠 Built With
+### 3. Run
 
-- [Next.js 14](https://nextjs.org/) - React Framework
-- [TypeScript](https://www.typescriptlang.org/) - Type Safety
-- [Tailwind CSS](https://tailwindcss.com/) - Styling
-- [ShadCN UI](https://ui.shadcn.com/) - UI Components
-- [Firebase](https://firebase.google.com/) - Database & Storage
-- [OpenAI](https://openai.com/) - AI Models
-- [LangChain](https://www.langchain.com/) - AI Orchestration
-- [Pinecone](https://www.pinecone.io/) - Vector Database
-- [Stripe](https://stripe.com/) - Payments
-- [Clerk](https://clerk.com/) - Authentication
+```bash
+npm run dev
+```
 
-## 📄 License
+Open [http://localhost:3000](http://localhost:3000).
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+> **Stripe webhooks locally:** run `stripe listen --forward-to localhost:3000/webhook` in a separate terminal to test subscription flows.
 
-## 👥 Contributing
+### 4. Database migrations (Risk Lens)
 
-We welcome contributions from the community! Whether you're fixing bugs, improving documentation, or suggesting new features, your input is valuable. Please read our [Contributing Guide](CONTRIBUTING.md) to get started.
-
-### How to Contribute:
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 🙏 Acknowledgments
-
-- [Next.js Documentation](https://nextjs.org/docs)
-- [Tailwind CSS Documentation](https://tailwindcss.com/docs)
-- [ShadCN UI Documentation](https://ui.shadcn.com/docs)
-
-## 🙌 Final Notes
-
-SaaScribe.ai is now production-ready and ready to transform how you interact with your documents. Built with scalability and user experience in mind, this platform is ideal for individuals and teams seeking faster, smarter document insights.
-
-## 📧 Contact
-
-<<<<<<< Updated upstream
-Abdulaziz - [@abd_az1z](https://twitter.com/abd_az1z) - [mohdadulaziz2023@gmail.com](mailto:mohdadulaziz2023@gmail.com)
-=======
-Abdulaziz - [@abd_az1z](https://twitter.com/abd_az1z) - contact@abdulaziz.dev  
->>>>>>> Stashed changes
-Project Link: [https://github.com/abd-az1z/saascribe.ai](https://github.com/abd-az1z/saascribe.ai)
+```bash
+npx drizzle-kit push
+```
 
 ---
 
-<<<<<<< Updated upstream
-✨ **Ready to get started?** [Try it now](https://saascribe.vercel.app) or [star the repository](https://github.com/abd-az1z/saascribe.ai) to show your support!
-=======
-✨ **Ready to get started?** [Try it now](https://saascribe.vercel.app) or [star the repository](https://github.com/abd-az1z/saascribe.ai) to show your support!
->>>>>>> Stashed changes
+## Project Structure
+
+```
+saascribe.ai/
+├── app/
+│   ├── page.tsx                  # Landing page
+│   ├── dashboard/                # Authenticated app
+│   │   ├── page.tsx              # Document list
+│   │   ├── files/[id]/page.tsx   # PDF viewer + chat
+│   │   └── upgrade/page.tsx      # Upgrade flow
+│   ├── risk-lens/page.tsx        # Contract Risk Lens
+│   └── webhook/route.ts          # Stripe webhook handler
+├── actions/
+│   ├── askQuestion.ts            # RAG Q&A server action
+│   ├── generateEmbeddings.ts     # Embedding pipeline
+│   ├── createCheckoutSession.ts  # Stripe checkout
+│   └── createStripePortal.ts     # Stripe portal
+├── components/
+│   ├── ChatWithPdf.tsx           # Real-time chat interface
+│   ├── PdfView.tsx               # PDF renderer
+│   ├── FileUploader.tsx          # Drag-and-drop upload
+│   ├── PricingSection.tsx        # Plan-aware pricing UI
+│   └── risk-dashboard.tsx        # Risk analysis results
+├── lib/
+│   ├── langChain.ts              # LangChain RAG pipeline
+│   ├── pinecone.ts               # Pinecone client
+│   ├── risk-engine.ts            # Contract analysis engine
+│   ├── schema.ts                 # Drizzle schema
+│   └── stripe-server.ts          # Stripe helpers
+├── firebase/
+│   ├── firebase.ts               # Client SDK
+│   └── firebaseAdmin.ts          # Admin SDK
+└── hooks/
+    ├── useSubscription.ts        # Realtime plan state
+    └── useUpload.ts              # Upload state machine
+```
+
+---
+
+## What I Built and Learned
+
+This project was an exercise in shipping a real product, not just writing code. Key decisions and outcomes:
+
+- **RAG pipeline from scratch** — implemented chunking, embedding, namespace-based vector retrieval, and chat-history-aware prompting without a pre-built wrapper, which forced a deep understanding of how retrieval-augmented generation actually works
+- **Dual-database architecture** — Firebase Firestore handles realtime chat sync, while NeonDB (Postgres) stores structured risk assessment data; choosing the right tool for each data shape rather than forcing one DB to do everything
+- **Monetization that actually works** — subscription state is enforced on both the client (UX) and server action (security), and Stripe webhook events are idempotently synced to Firestore so the UI never gets out of sync
+- **Product thinking over feature thinking** — the Contract Risk Lens feature started as a technical curiosity about hybrid AI analysis; framing it as "reduce contract review from 45 minutes to 2 minutes" turned it into a feature with a clear value proposition
+
+---
+
+## Contact
+
+**Abdulaziz** — [@abd_az1z](https://twitter.com/abd_az1z) — mohdabdulaziz2023@gmail.com
+
+Project: [github.com/abd-az1z/saascribe.ai](https://github.com/abd-az1z/saascribe.ai) · Live: [saascribe.vercel.app](https://saascribe.vercel.app)

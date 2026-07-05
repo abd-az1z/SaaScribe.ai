@@ -49,3 +49,11 @@ google-service-account.json
 *-service-account*.json
 serviceKey.json
 service-key.json
+v2.md
+app.zip
+
+# temp PDF uploads (local development only)
+/temp/
+
+# scratch files
+test

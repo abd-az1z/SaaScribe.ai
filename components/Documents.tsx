@@ -8,6 +8,22 @@ import { Progress } from "./ui/progress";
 import { cn } from "@/lib/utils";
 import Link from 'next/link';
 
+async function downloadCrossOrigin(url: string, fileName: string) {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('Network response was not ok');
+    const blob = await response.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    const link = window.document.createElement('a');
+    link.href = blobUrl;
+    link.download = fileName;
+    link.click();
+    URL.revokeObjectURL(blobUrl);
+  } catch {
+    toast.error('Failed to download file');
+  }
+}
+
 export interface Document {
   id: string;
   name: string;
@@ -350,18 +366,18 @@ export default function Documents({
                         </div>
                       </div>
                       <div className="flex items-center space-x-1">
-                        <a
-                          href={document.downloadUrl}
-                          download={document.name}
-                          onClick={(e) => e.stopPropagation()}
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); downloadCrossOrigin(document.downloadUrl, document.name); }}
                           className="p-1.5 text-gray-400 hover:text-blue-600 rounded-full hover:bg-blue-50"
                           title="Download"
                         >
                           <Download className="h-4 w-4" />
-                        </a>
+                        </button>
                         <button
+                          type="button"
                           onClick={(e) => handleDeleteDocument(document.id, e)}
-                          disabled={deletingId === document.id}
+                          disabled={!hasActiveMembership || deletingId === document.id}
                           className={`p-1.5 rounded-full ${hasActiveMembership
                               ? 'text-gray-400 hover:text-red-600 hover:bg-red-50'
                               : 'text-gray-300 cursor-not-allowed'
@@ -402,15 +418,14 @@ export default function Documents({
                         <Eye className="h-4 w-4 mr-1.5" />
                         View
                       </Link>
-                      <a
-                        href={document.downloadUrl}
-                        download={document.name}
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); downloadCrossOrigin(document.downloadUrl, document.name); }}
                         className="inline-flex items-center text-sm text-gray-600 hover:text-blue-600 px-2 py-1 rounded hover:bg-blue-50"
-                        onClick={(e) => e.stopPropagation()}
                       >
                         <Download className="h-4 w-4 mr-1.5" />
                         Download
-                      </a>
+                      </button>
                     </div>
                   </div>
                 </div>
