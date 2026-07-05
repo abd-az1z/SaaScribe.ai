@@ -19,11 +19,18 @@ import { auth } from "@clerk/nextjs/server";
 import { Buffer } from "buffer";
 import { v4 as uuidv4 } from "uuid";
 
-// initialize open ai model
-const model = new ChatOpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-  modelName: "gpt-4o",
-});
+// Lazily initialize the OpenAI model so importing this module during the
+// Next.js build never requires OPENAI_API_KEY to be present.
+let _model: ChatOpenAI | undefined;
+function getModel(): ChatOpenAI {
+  if (!_model) {
+    _model = new ChatOpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+      modelName: "gpt-4o",
+    });
+  }
+  return _model;
+}
 
 export const indexName = "projects-aziz";
 
@@ -186,7 +193,7 @@ Document context:
 
   // Create a documents chain
   const combineDocsChain = await createStuffDocumentsChain({
-    llm: model,
+    llm: getModel(),
     prompt: answerPrompt,
   });
 
