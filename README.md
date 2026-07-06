@@ -4,7 +4,7 @@
 
 **Turn any PDF into an intelligent conversation — and every contract into a risk report.**
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-saascribe.vercel.app-00f2fe?style=for-the-badge&logo=vercel)](https://saascribe.vercel.app)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-saascribeai.vercel.app-00f2fe?style=for-the-badge&logo=vercel)](https://saascribeai.vercel.app)
 [![Next.js](https://img.shields.io/badge/Next.js%2016-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![OpenAI](https://img.shields.io/badge/GPT--4o-412991?style=for-the-badge&logo=openai&logoColor=white)](https://openai.com/)
@@ -19,7 +19,7 @@ SaaScribe.ai is a production-ready AI SaaS platform that lets users upload PDF d
 
 The platform is fully monetized with a freemium model (Stripe subscriptions), enforces per-tier usage limits in real time, and is deployed to Vercel.
 
-**→ [Try the live demo](https://saascribe.vercel.app)**
+**→ [Try the live demo](https://saascribeai.vercel.app)**
 
 ---
 
@@ -256,4 +256,4 @@ This project was an exercise in shipping a real product, not just writing code. 
 
 **Abdulaziz** — [@abd_az1z](https://twitter.com/abd_az1z) — mohdabdulaziz2023@gmail.com
 
-Project: [github.com/abd-az1z/saascribe.ai](https://github.com/abd-az1z/saascribe.ai) · Live: [saascribe.vercel.app](https://saascribe.vercel.app)
+Project: [github.com/abd-az1z/saascribe.ai](https://github.com/abd-az1z/saascribe.ai) · Live: [saascribeai.vercel.app](https://saascribeai.vercel.app)
